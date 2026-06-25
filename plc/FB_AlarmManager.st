@@ -123,12 +123,24 @@ VAR_IN_OUT
     stContext : ST_AlarmManagerContext;
     stOut     : ST_AlarmManagerOutput;
 END_VAR
+VAR
+    xAckRise : BOOL;
+    xAlarmRaisedOrChanged : BOOL;
+    rFlashPeriod_s : REAL;
+END_VAR
 
 // Cyclic execution function. Highest severity wins; acknowledgement is separated from reset.
 stOut.stTimeline.xNewEvent := FALSE;
 stContext.rRuntime_s := stContext.rRuntime_s + stIn.rCycleTime_s;
+xAckRise := stIn.xAcknowledge AND NOT stContext.xAckLast;
+
+rFlashPeriod_s := stConfig.rFlashPeriod_s;
+IF rFlashPeriod_s <= 0.0 THEN
+    rFlashPeriod_s := 0.5;
+END_IF;
+
 stContext.rFlashElapsed_s := stContext.rFlashElapsed_s + stIn.rCycleTime_s;
-IF stContext.rFlashElapsed_s >= stConfig.rFlashPeriod_s THEN
+IF stContext.rFlashElapsed_s >= rFlashPeriod_s THEN
     stContext.xFlashState := NOT stContext.xFlashState;
     stContext.rFlashElapsed_s := 0.0;
 END_IF;
@@ -144,13 +156,6 @@ stOut.xAnyAlarmActive := stOut.xGeneralJamAlarm
                          OR stIn.xRouteFault
                          OR stIn.xVfdFault
                          OR NOT stIn.xAirPressureOK;
-
-IF stIn.xAcknowledge THEN
-    stContext.xAckLatched := TRUE;
-END_IF;
-IF stIn.xReset AND NOT stOut.xAnyAlarmActive THEN
-    stContext.xAckLatched := FALSE;
-END_IF;
 
 IF NOT stContext.xInitialized THEN
     stContext.eState := E_AlarmManagerState.ALARM_MGR_UNINITIALISED;
@@ -214,6 +219,20 @@ ELSE
     stOut.sActiveMessage := 'No active alarms';
 END_IF;
 
+// A held acknowledge must not pre-acknowledge a future alarm.
+xAlarmRaisedOrChanged := stOut.xAnyAlarmActive AND ((stOut.eActiveAlarmCode <> stContext.eLastAlarmCode) OR NOT stContext.xAlarmActiveLast);
+IF xAlarmRaisedOrChanged THEN
+    stContext.xAckLatched := FALSE;
+END_IF;
+
+IF xAckRise AND stOut.xAnyAlarmActive THEN
+    stContext.xAckLatched := TRUE;
+END_IF;
+
+IF stIn.xReset AND NOT stContext.xResetLast AND NOT stOut.xAnyAlarmActive THEN
+    stContext.xAckLatched := FALSE;
+END_IF;
+
 stOut.xAnyUnacked := stOut.xAnyAlarmActive AND NOT stContext.xAckLatched;
 stOut.xStackGreen := (stIn.ePackMLState = E_PackML_State.EXECUTE) AND NOT stOut.xAnyAlarmActive;
 stOut.xStackYellow := stContext.xFlashState
@@ -226,7 +245,7 @@ stOut.xStackRed := stOut.xEStopAlarm
 stOut.xSounder := stOut.xAnyUnacked AND (stOut.uiSeverity >= 800);
 
 // Event logging: log alarm raise/change, clear, acknowledge, and reset as deterministic ring-buffer records.
-IF stOut.xAnyAlarmActive AND ((stOut.eActiveAlarmCode <> stContext.eLastAlarmCode) OR NOT stContext.xAlarmActiveLast) THEN
+IF xAlarmRaisedOrChanged THEN
     F_EventTimeline_Append(
         rTimestamp_s := stContext.rRuntime_s,
         eClass := E_MHMCEventClass.EVENT_ALARM,
@@ -254,7 +273,7 @@ ELSIF (NOT stOut.xAnyAlarmActive) AND stContext.xAlarmActiveLast THEN
     );
 END_IF;
 
-IF stIn.xAcknowledge AND NOT stContext.xAckLast THEN
+IF xAckRise AND stOut.xAnyAlarmActive THEN
     F_EventTimeline_Append(
         rTimestamp_s := stContext.rRuntime_s,
         eClass := E_MHMCEventClass.EVENT_COMMAND,

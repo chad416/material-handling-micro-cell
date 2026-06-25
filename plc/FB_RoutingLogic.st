@@ -28,6 +28,10 @@ VAR_INPUT
     xMaintenanceSafeguardsOK : BOOL := FALSE;  // Maintenance key/permissive validated.
     xDiverter1Ready          : BOOL := TRUE;   // Diverter 1 can accept request.
     xDiverter2Ready          : BOOL := TRUE;   // Diverter 2 can accept request.
+    xDiverter1Done           : BOOL := FALSE;  // Diverter 1 completed the active request.
+    xDiverter2Done           : BOOL := FALSE;  // Diverter 2 completed the active request.
+    xDiverter1Faulted        : BOOL := FALSE;  // Diverter 1 fault feedback.
+    xDiverter2Faulted        : BOOL := FALSE;  // Diverter 2 fault feedback.
 END_VAR
 VAR_OUTPUT
     sLastBarcode        : STRING(80);
@@ -98,6 +102,8 @@ stDiverter1.xCommandExtend := FALSE;
 stDiverter2.xCommandExtend := FALSE;
 stDiverter1.xVerificationSensor := xRawPE4;
 stDiverter2.xVerificationSensor := xRawPE5;
+stDiverter1.xFaulted := xDiverter1Faulted;
+stDiverter2.xFaulted := xDiverter2Faulted;
 stRoutingStatus.xScannerTriggerPulse := FALSE;
 stRoutingStatus.xQueueOverflow := FALSE;
 stRoutingStatus.xScannerTimeout := FALSE;
@@ -303,6 +309,8 @@ IF xAutoRouteActive THEN
             arrQueue[i].eRouteTarget := E_RouteTarget.ROUTE_REJECT;
             arrQueue[i].iRouteTarget := 9;
             stRoutingStatus.xScannerTimeout := TRUE;
+            stRoutingStatus.xRouteFault := TRUE;
+            xRouteFault := TRUE;
             xScanBadPulse := TRUE;
             stRoutingStatus.sLastRouteMessage := 'Package missed scanner window and was rejected';
         END_IF;
@@ -314,28 +322,46 @@ END_IF;
 // ==========================================
 IF xAutoRouteActive THEN
     FOR i := 1 TO 10 DO
-        IF arrQueue[i].xActive AND NOT arrQueue[i].xDivertIssued THEN
-            IF (arrQueue[i].eRouteTarget = E_RouteTarget.ROUTE_LANE_A)
-               AND (arrQueue[i].rPosition >= rDiv1Start_m)
-               AND (arrQueue[i].rPosition <= rDiv1End_m) THEN
-                IF xDiverter1Ready THEN
-                    stDiverter1.xCommandExtend := TRUE;
-                    arrQueue[i].xDivertIssued := TRUE;
-                ELSE
+        IF arrQueue[i].xActive THEN
+            IF arrQueue[i].eRouteTarget = E_RouteTarget.ROUTE_LANE_A THEN
+                IF (arrQueue[i].rPosition >= rDiv1Start_m)
+                   AND (arrQueue[i].rPosition <= rDiv1End_m) THEN
+                    IF xDiverter1Faulted THEN
+                        stRoutingStatus.xRouteFault := TRUE;
+                        xRouteFault := TRUE;
+                        stRoutingStatus.sLastRouteMessage := 'Diverter 1 faulted during firing window';
+                    ELSIF xDiverter1Ready OR arrQueue[i].xDivertIssued THEN
+                        stDiverter1.xCommandExtend := NOT xDiverter1Done;
+                        arrQueue[i].xDivertIssued := TRUE;
+                    ELSE
+                        stRoutingStatus.xRouteFault := TRUE;
+                        xRouteFault := TRUE;
+                        stRoutingStatus.sLastRouteMessage := 'Diverter 1 not ready at firing window';
+                    END_IF;
+                ELSIF (arrQueue[i].rPosition > rDiv1End_m) AND NOT arrQueue[i].xDivertIssued THEN
                     stRoutingStatus.xRouteFault := TRUE;
                     xRouteFault := TRUE;
-                    stRoutingStatus.sLastRouteMessage := 'Diverter 1 not ready at firing window';
+                    stRoutingStatus.sLastRouteMessage := 'Lane A package passed Diverter 1 without command';
                 END_IF;
-            ELSIF (arrQueue[i].eRouteTarget = E_RouteTarget.ROUTE_LANE_B)
-                  AND (arrQueue[i].rPosition >= rDiv2Start_m)
-                  AND (arrQueue[i].rPosition <= rDiv2End_m) THEN
-                IF xDiverter2Ready THEN
-                    stDiverter2.xCommandExtend := TRUE;
+            ELSIF arrQueue[i].eRouteTarget = E_RouteTarget.ROUTE_LANE_B THEN
+                IF (arrQueue[i].rPosition >= rDiv2Start_m)
+                   AND (arrQueue[i].rPosition <= rDiv2End_m) THEN
+                    IF xDiverter2Faulted THEN
+                        stRoutingStatus.xRouteFault := TRUE;
+                        xRouteFault := TRUE;
+                        stRoutingStatus.sLastRouteMessage := 'Diverter 2 faulted during firing window';
+                    ELSIF xDiverter2Ready OR arrQueue[i].xDivertIssued THEN
+                        stDiverter2.xCommandExtend := NOT xDiverter2Done;
                     arrQueue[i].xDivertIssued := TRUE;
-                ELSE
+                    ELSE
+                        stRoutingStatus.xRouteFault := TRUE;
+                        xRouteFault := TRUE;
+                        stRoutingStatus.sLastRouteMessage := 'Diverter 2 not ready at firing window';
+                    END_IF;
+                ELSIF (arrQueue[i].rPosition > rDiv2End_m) AND NOT arrQueue[i].xDivertIssued THEN
                     stRoutingStatus.xRouteFault := TRUE;
                     xRouteFault := TRUE;
-                    stRoutingStatus.sLastRouteMessage := 'Diverter 2 not ready at firing window';
+                    stRoutingStatus.sLastRouteMessage := 'Lane B package passed Diverter 2 without command';
                 END_IF;
             END_IF;
         END_IF;
@@ -348,7 +374,10 @@ END_IF;
 IF xAutoRouteActive AND xRawPE4 AND NOT xPE4_Last THEN
     iMatch := 0;
     FOR i := 1 TO 10 DO
-        IF arrQueue[i].xActive AND (arrQueue[i].eRouteTarget = E_RouteTarget.ROUTE_LANE_A) THEN
+        IF arrQueue[i].xActive
+           AND (arrQueue[i].eRouteTarget = E_RouteTarget.ROUTE_LANE_A)
+           AND arrQueue[i].xDivertIssued
+           AND (arrQueue[i].rPosition >= rDiv1Start_m) THEN
             iMatch := i;
             EXIT;
         END_IF;
@@ -371,7 +400,10 @@ END_IF;
 IF xAutoRouteActive AND xRawPE5 AND NOT xPE5_Last THEN
     iMatch := 0;
     FOR i := 1 TO 10 DO
-        IF arrQueue[i].xActive AND (arrQueue[i].eRouteTarget = E_RouteTarget.ROUTE_LANE_B) THEN
+        IF arrQueue[i].xActive
+           AND (arrQueue[i].eRouteTarget = E_RouteTarget.ROUTE_LANE_B)
+           AND arrQueue[i].xDivertIssued
+           AND (arrQueue[i].rPosition >= rDiv2Start_m) THEN
             iMatch := i;
             EXIT;
         END_IF;
@@ -394,7 +426,10 @@ END_IF;
 IF xAutoRouteActive AND xRawPE6 AND NOT xPE6_Last THEN
     iMatch := 0;
     FOR i := 1 TO 10 DO
-        IF arrQueue[i].xActive AND (arrQueue[i].eRouteTarget = E_RouteTarget.ROUTE_REJECT) THEN
+        IF arrQueue[i].xActive
+           AND (arrQueue[i].eRouteTarget = E_RouteTarget.ROUTE_REJECT)
+           AND arrQueue[i].xScanned
+           AND (arrQueue[i].rPosition >= rScannerEnd_m) THEN
             iMatch := i;
             EXIT;
         END_IF;

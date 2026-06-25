@@ -1386,10 +1386,7 @@ function Test-TwinCATBuild {
         if (Test-Path -LiteralPath $tmc) {
             try {
                 [xml]$tmcXml = Get-Content -LiteralPath $tmc -Raw
-                $names = @($tmcXml.TcModuleClass.DataTypes.DataType.Name | ForEach-Object { $_.'#text' })
-                if ($names.Count -eq 0) {
-                    $names = @($tmcXml.TcModuleClass.DataTypes.DataType.Name)
-                }
+                $names = @($tmcXml.SelectNodes("//DataType/Name") | ForEach-Object { $_.InnerText })
                 Assert-True $suite "TMC exposes sort recipe and event timeline types" (($names -contains "ST_SortRecipe") -and ($names -contains "ST_MHMCEventTimeline")) "Type names checked in TMC"
             }
             catch {
@@ -1415,10 +1412,7 @@ function Test-TwinCATBuild {
     if (Test-Path -LiteralPath $tmc) {
         try {
             [xml]$tmcXml = Get-Content -LiteralPath $tmc -Raw
-            $names = @($tmcXml.TcModuleClass.DataTypes.DataType.Name | ForEach-Object { $_.'#text' })
-            if ($names.Count -eq 0) {
-                $names = @($tmcXml.TcModuleClass.DataTypes.DataType.Name)
-            }
+            $names = @($tmcXml.SelectNodes("//DataType/Name") | ForEach-Object { $_.InnerText })
             Assert-True $suite "TMC exposes sort recipe and event timeline types" (($names -contains "ST_SortRecipe") -and ($names -contains "ST_MHMCEventTimeline")) "Type names checked in TMC"
         }
         catch {

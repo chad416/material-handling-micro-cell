@@ -1,11 +1,11 @@
 ﻿# MHMC PLC Validation Report
 
-- Generated: 2026-06-25 15:23:55 +02:00
+- Generated: 2026-06-25 16:34:52 +02:00
 - Workspace: C:\Users\chand\.gemini\antigravity\scratch\material_handling_cell
 - Scope: static source contracts, deterministic offline FAT/reference scenarios, and TwinCAT compiler gate
-- Passed: 144
+- Passed: 145
 - Failed: 0
-- Total checks: 144
+- Total checks: 145
 
 ## Important Scope Boundary
 
@@ -158,4 +158,5 @@ This validation does not replace physical commissioning. Real I/O mapping, E-sto
 | FATSequence | startup, Lane A route, jam hold, reset, and unhold complete | PASS |  |
 | FATSequence | FAT KPI reflects verified package | PASS |  |
 | TwinCATCompile | existing TwinCAT build log reports success | PASS |  |
-| TwinCATCompile | TwinCAT build artifact evidence recorded | PASS | Loose .tmc is not present now; accepted because existing transcript proves LastBuildInfo 0 and this evidence mode does not launch XAE. |
+| TwinCATCompile | TwinCAT generated TMC symbol file exists | PASS |  |
+| TwinCATCompile | TMC exposes sort recipe and event timeline types | PASS |  |

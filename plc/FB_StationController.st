@@ -164,6 +164,8 @@ VAR
     rMaintenanceLimit_mps : REAL;
     xManualModeSafe     : BOOL;
     xMaintenanceModeSafe: BOOL;
+    xHoldRequested      : BOOL;
+    rTransitionTimeout_s: REAL;
 END_VAR
 
 // Cyclic execution function. Implements PackML sequencing with symbolic outputs.
@@ -171,13 +173,21 @@ IF stIn.rCycleTime_s > 0.0 THEN
     stContext.rTransitionElapsed_s := stContext.rTransitionElapsed_s + stIn.rCycleTime_s;
 END_IF;
 
-xTransitionComplete := stContext.rTransitionElapsed_s >= stConfig.rTransitionTimeout_s;
+rTransitionTimeout_s := stConfig.rTransitionTimeout_s;
+IF rTransitionTimeout_s <= 0.0 THEN
+    rTransitionTimeout_s := 1.0;
+END_IF;
+xTransitionComplete := stContext.rTransitionElapsed_s >= rTransitionTimeout_s;
 stOut.xResetAlarms := stIn.xReset AND NOT stContext.xResetLast;
 stOut.xPermissivesOK := stIn.xSafetyLoopOK
                         AND stIn.xAirPressureOK
                         AND stIn.xVfdReady
                         AND NOT stIn.xDiverter1Faulted
                         AND NOT stIn.xDiverter2Faulted;
+xHoldRequested := stIn.xHold
+                  OR stIn.xJamAlarm
+                  OR stIn.xDownstreamBlocked
+                  OR NOT stOut.xPermissivesOK;
 
 // Select the speed source by mode. Every path is clamped before it reaches the drive adapter.
 rAutoSpeed_mps := stIn.stRecipe.rAutoSpeed_mps;
@@ -270,6 +280,9 @@ ELSE
             IF stIn.xStop THEN
                 stContext.ePackMLState := E_PackML_State.STOPPING;
                 stContext.rTransitionElapsed_s := 0.0;
+            ELSIF xHoldRequested THEN
+                stContext.ePackMLState := E_PackML_State.HOLDING;
+                stContext.rTransitionElapsed_s := 0.0;
             ELSIF xTransitionComplete AND stOut.xPermissivesOK
                   AND (stContext.eCurrentMode = E_PackML_Mode.AUTO) THEN
                 stContext.ePackMLState := E_PackML_State.EXECUTE;
@@ -281,7 +294,7 @@ ELSE
             IF stIn.xStop THEN
                 stContext.ePackMLState := E_PackML_State.STOPPING;
                 stContext.rTransitionElapsed_s := 0.0;
-            ELSIF stIn.xJamAlarm OR stIn.xHold OR NOT stOut.xPermissivesOK THEN
+            ELSIF xHoldRequested AND NOT stIn.xDownstreamBlocked THEN
                 stContext.ePackMLState := E_PackML_State.HOLDING;
                 stContext.rTransitionElapsed_s := 0.0;
             ELSIF stIn.xDownstreamBlocked THEN
@@ -294,6 +307,9 @@ ELSE
             IF stIn.xStop THEN
                 stContext.ePackMLState := E_PackML_State.STOPPING;
                 stContext.rTransitionElapsed_s := 0.0;
+            ELSIF stIn.xJamAlarm OR stIn.xHold OR NOT stOut.xPermissivesOK THEN
+                stContext.ePackMLState := E_PackML_State.HOLDING;
+                stContext.rTransitionElapsed_s := 0.0;
             ELSIF NOT stIn.xDownstreamBlocked THEN
                 stContext.ePackMLState := E_PackML_State.EXECUTE;
                 stContext.rTransitionElapsed_s := 0.0;
@@ -301,7 +317,10 @@ ELSE
 
         E_PackML_State.HOLDING:
             stContext.eState := E_StationControllerState.STATION_HOLDING;
-            IF xTransitionComplete THEN
+            IF stIn.xStop THEN
+                stContext.ePackMLState := E_PackML_State.STOPPING;
+                stContext.rTransitionElapsed_s := 0.0;
+            ELSIF xTransitionComplete THEN
                 stContext.ePackMLState := E_PackML_State.HELD;
                 stContext.rTransitionElapsed_s := 0.0;
             END_IF;
@@ -321,6 +340,9 @@ ELSE
             IF stIn.xStop THEN
                 stContext.ePackMLState := E_PackML_State.STOPPING;
                 stContext.rTransitionElapsed_s := 0.0;
+            ELSIF xHoldRequested THEN
+                stContext.ePackMLState := E_PackML_State.HOLDING;
+                stContext.rTransitionElapsed_s := 0.0;
             ELSIF xTransitionComplete THEN
                 stContext.ePackMLState := E_PackML_State.EXECUTE;
                 stContext.rTransitionElapsed_s := 0.0;
@@ -339,6 +361,11 @@ ELSE
                 stContext.ePackMLState := E_PackML_State.STOPPED;
                 stContext.rTransitionElapsed_s := 0.0;
             END_IF;
+
+        ELSE
+            stContext.eState := E_StationControllerState.STATION_STOPPED;
+            stContext.ePackMLState := E_PackML_State.STOPPED;
+            stContext.rTransitionElapsed_s := 0.0;
     END_CASE;
 END_IF;
 

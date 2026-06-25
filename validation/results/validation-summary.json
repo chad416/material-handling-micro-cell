@@ -1,10 +1,10 @@
 ﻿{
-    "GeneratedAt":  "2026-06-25 15:23:55 +02:00",
+    "GeneratedAt":  "2026-06-25 16:34:52 +02:00",
     "Workspace":  "C:\\Users\\chand\\.gemini\\antigravity\\scratch\\material_handling_cell",
     "Scope":  "static source contracts; deterministic offline FAT/reference scenarios; TwinCAT compiler gate",
-    "Passed":  144,
+    "Passed":  145,
     "Failed":  0,
-    "Total":  144,
+    "Total":  145,
     "HardwareCommissioning":  "Not executed in this environment; requires physical I/O, safety validation, pneumatics, VFD, scanner, diverters, OPC UA collector, and signed FAT/SAT.",
     "Results":  [
                     {
@@ -867,9 +867,15 @@
                     },
                     {
                         "Suite":  "TwinCATCompile",
-                        "Name":  "TwinCAT build artifact evidence recorded",
+                        "Name":  "TwinCAT generated TMC symbol file exists",
                         "Passed":  true,
-                        "Detail":  "Loose .tmc is not present now; accepted because existing transcript proves LastBuildInfo 0 and this evidence mode does not launch XAE."
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "TwinCATCompile",
+                        "Name":  "TMC exposes sort recipe and event timeline types",
+                        "Passed":  true,
+                        "Detail":  ""
                     }
                 ]
 }

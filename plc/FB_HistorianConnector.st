@@ -124,6 +124,9 @@ END_VAR
 VAR
     xHeartbeatEdge : BOOL;
     xNewTimelineEvent : BOOL;
+    rSamplePeriod_s : REAL;
+    rHeartbeatTimeout_s : REAL;
+    uiMaxMissedHeartbeats : UINT;
 END_VAR
 
 // Cyclic execution function. Provides deterministic sample strobes for Telegraf/SCADA.
@@ -140,14 +143,32 @@ xHeartbeatEdge := stIn.xCollectorHeartbeat <> stContext.xHeartbeatLast;
 xNewTimelineEvent := stIn.stTimeline.stLastEvent.xActive
                      AND (stIn.stTimeline.stLastEvent.udiSequence <> stContext.udiLastEventSequence);
 
-IF xHeartbeatEdge THEN
+rSamplePeriod_s := stConfig.rSamplePeriod_s;
+IF rSamplePeriod_s <= 0.0 THEN
+    rSamplePeriod_s := 1.0;
+END_IF;
+
+rHeartbeatTimeout_s := stConfig.rHeartbeatTimeout_s;
+IF rHeartbeatTimeout_s <= 0.0 THEN
+    rHeartbeatTimeout_s := 5.0;
+END_IF;
+
+uiMaxMissedHeartbeats := stConfig.uiMaxMissedHeartbeats;
+IF uiMaxMissedHeartbeats = 0 THEN
+    uiMaxMissedHeartbeats := 3;
+END_IF;
+
+IF (NOT stIn.xEnable) OR (NOT stIn.xOpcUaServerReady) THEN
+    stContext.rHeartbeatElapsed_s := 0.0;
+    stOut.uiMissedHeartbeats := 0;
+ELSIF xHeartbeatEdge THEN
     stContext.rHeartbeatElapsed_s := 0.0;
     stOut.uiMissedHeartbeats := 0;
 ELSE
     stContext.rHeartbeatElapsed_s := stContext.rHeartbeatElapsed_s + stIn.rCycleTime_s;
 END_IF;
 
-IF stContext.rHeartbeatElapsed_s >= stConfig.rHeartbeatTimeout_s THEN
+IF stContext.rHeartbeatElapsed_s >= rHeartbeatTimeout_s THEN
     stOut.uiMissedHeartbeats := stOut.uiMissedHeartbeats + 1;
     stContext.rHeartbeatElapsed_s := 0.0;
 END_IF;
@@ -158,7 +179,7 @@ ELSIF NOT stIn.xEnable THEN
     stContext.eState := E_HistorianConnectorState.HIST_DISABLED;
 ELSIF NOT stIn.xOpcUaServerReady THEN
     stContext.eState := E_HistorianConnectorState.HIST_CONNECTING;
-ELSIF stOut.uiMissedHeartbeats >= stConfig.uiMaxMissedHeartbeats THEN
+ELSIF stOut.uiMissedHeartbeats >= uiMaxMissedHeartbeats THEN
     stContext.eState := E_HistorianConnectorState.HIST_BACKOFF;
 ELSIF NOT stIn.xLastWriteOK THEN
     stContext.eState := E_HistorianConnectorState.HIST_FAULTED;
@@ -168,12 +189,12 @@ END_IF;
 
 stOut.xSubscribeEnable := stIn.xEnable AND stIn.xOpcUaServerReady;
 stOut.xHistorianHealthy := stOut.xSubscribeEnable
-                           AND (stOut.uiMissedHeartbeats < stConfig.uiMaxMissedHeartbeats)
+                           AND (stOut.uiMissedHeartbeats < uiMaxMissedHeartbeats)
                            AND stIn.xLastWriteOK;
 
 IF stOut.xHistorianHealthy THEN
     stContext.rSampleElapsed_s := stContext.rSampleElapsed_s + stIn.rCycleTime_s;
-    IF stContext.rSampleElapsed_s >= stConfig.rSamplePeriod_s THEN
+    IF stContext.rSampleElapsed_s >= rSamplePeriod_s THEN
         stContext.rSampleElapsed_s := 0.0;
         stContext.eState := E_HistorianConnectorState.HIST_PUBLISHING;
         stOut.xSampleStrobe := TRUE;
@@ -186,6 +207,8 @@ IF stOut.xHistorianHealthy THEN
         stOut.xPublishEvent := TRUE;
         stContext.udiLastEventSequence := stIn.stTimeline.stLastEvent.udiSequence;
     END_IF;
+ELSE
+    stContext.rSampleElapsed_s := 0.0;
 END_IF;
 
 IF stOut.xPublishEvent THEN

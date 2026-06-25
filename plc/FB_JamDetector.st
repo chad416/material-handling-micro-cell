@@ -158,6 +158,7 @@ VAR
     rWarningRatio: REAL;
     xAnyBlocked  : BOOL;
     xResetAllowed: BOOL;
+    xResetAcceptedThisScan : BOOL;
 END_VAR
 
 // Cyclic execution function. PE watchdogs are independent and symbolic.
@@ -173,6 +174,7 @@ stOut.xResetAcceptedPulse := FALSE;
 stOut.xRequestHold := stOut.xJamAlarm;
 stOut.xInRecovery := FALSE;
 stOut.xRecoveryReady := stOut.xJamAlarm AND stOut.xSensorsClear;
+xResetAcceptedThisScan := FALSE;
 xResetAllowed := stIn.xResetJam
                  AND stOut.xSensorsClear
                  AND (stIn.xAllowAutoRecovery
@@ -191,6 +193,7 @@ IF xResetAllowed THEN
     stContext.eState := E_JamDetectorState.JAM_DET_RECOVERING;
     stOut.xInRecovery := TRUE;
     stOut.xResetAcceptedPulse := TRUE;
+    xResetAcceptedThisScan := TRUE;
 END_IF;
 
 IF NOT stIn.xRawPE1 THEN
@@ -211,7 +214,10 @@ ELSIF stIn.xConveyorRunning THEN
         stContext.rPE3Blocked_s := stContext.rPE3Blocked_s + stIn.rCycleTime_s;
 END_IF;
 
-IF NOT stContext.xInitialized THEN
+IF xResetAcceptedThisScan AND stContext.xInitialized THEN
+    stContext.eState := E_JamDetectorState.JAM_DET_RECOVERING;
+    stOut.xInRecovery := TRUE;
+ELSIF NOT stContext.xInitialized THEN
     stContext.eState := E_JamDetectorState.JAM_DET_UNINITIALISED;
 ELSIF (stContext.rPE1Blocked_s >= stOut.rActiveLimit_s)
       OR (stContext.rPE2Blocked_s >= stOut.rActiveLimit_s)

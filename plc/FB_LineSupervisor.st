@@ -264,13 +264,17 @@ ELSIF stIn.xLoadRecipeCommand AND NOT stContext.xLoadRecipeLast THEN
     END_IF;
 ELSIF stIn.xStationReady THEN
     stContext.eState := E_LineSupervisorState.LINE_SUP_COMMANDING;
-    stOut.xStartCellPulse := stIn.xStartCommand AND NOT stContext.xStartLast;
+    stOut.xStartCellPulse := stOut.xRecipeValid AND stIn.xStartCommand AND NOT stContext.xStartLast;
     stOut.xStopCellPulse := stIn.xStopCommand AND NOT stContext.xStopLast;
     stOut.xResetCellPulse := stIn.xResetCommand AND NOT stContext.xResetLast;
-    stOut.xUnholdCellPulse := stIn.xUnholdCommand AND NOT stContext.xUnholdLast;
+    stOut.xUnholdCellPulse := stOut.xRecipeValid AND stIn.xUnholdCommand AND NOT stContext.xUnholdLast;
     stOut.xClearCellPulse := stIn.xClearCommand AND NOT stContext.xClearLast;
     stOut.xSupervisorHealthy := stOut.xRecipeValid;
-    stOut.sStatusText := 'Supervisor command interface ready';
+    IF stOut.xRecipeValid THEN
+        stOut.sStatusText := 'Supervisor command interface ready';
+    ELSE
+        stOut.sStatusText := 'Waiting for valid recipe before start';
+    END_IF;
 ELSE
     stContext.eState := E_LineSupervisorState.LINE_SUP_READY;
     stOut.xSupervisorHealthy := stOut.xRecipeValid;
