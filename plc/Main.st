@@ -33,7 +33,7 @@ VAR
     xJamResetTrig_Last  : BOOL := FALSE;
     
     // Barcode scanner integration registers
-    sScannerData        : STRING(80) := "";
+    sScannerData        : STRING(80) := '';
     xScannerDataValid   : BOOL := FALSE;
     
     // OEE Metrics
@@ -144,3 +144,5 @@ uiHeartbeat := uiHeartbeat + 1;
 IF uiHeartbeat > 9999 THEN
     uiHeartbeat := 0;
 END_IF;
+
+END_PROGRAM

@@ -43,6 +43,7 @@ STRUCT
     rOEE_percent         : REAL;               // KPI source.
     xActiveAlarm         : BOOL;               // Alarm/event source.
     sActiveAlarmMessage  : STRING(80);         // Alarm/event source.
+    stTimeline           : ST_MHMCEventTimeline; // Event timeline from AlarmManager.
     rCycleTime_s         : REAL;               // PLC task interval for tests.
 END_STRUCT
 END_TYPE
@@ -56,10 +57,12 @@ STRUCT
     xPublishDiverter      : BOOL;       // Sample diverter_telemetry.
     xPublishKPI           : BOOL;       // Sample cell_kpis.
     xPublishAlarm         : BOOL;       // Sample alarms_events.
+    xPublishEvent         : BOOL;       // Publish one newly appended timeline event.
     uiMissedHeartbeats    : UINT;       // Collector heartbeat misses.
     sNamespaceUri         : STRING(120); // OPC UA namespace exposed to collector.
     sMeasurementClass     : STRING(40);  // Current logical measurement group.
     sLineProtocolPayload  : STRING(255); // Skeleton payload contract for collector tests.
+    stLastEvent           : ST_MHMCEventRecord; // Last event for OPC UA/Influx mapping.
     sStatusText           : STRING(80);
 END_STRUCT
 END_TYPE
@@ -71,6 +74,7 @@ STRUCT
     xHeartbeatLast     : BOOL;
     rSampleElapsed_s   : REAL;
     rHeartbeatElapsed_s: REAL;
+    udiLastEventSequence : UDINT;
 END_STRUCT
 END_TYPE
 
@@ -89,6 +93,7 @@ stContext.xInitialized := TRUE;
 stContext.xHeartbeatLast := FALSE;
 stContext.rSampleElapsed_s := 0.0;
 stContext.rHeartbeatElapsed_s := 0.0;
+stContext.udiLastEventSequence := 0;
 
 stOut.xSubscribeEnable := FALSE;
 stOut.xSampleStrobe := FALSE;
@@ -97,6 +102,7 @@ stOut.xPublishConveyor := FALSE;
 stOut.xPublishDiverter := FALSE;
 stOut.xPublishKPI := FALSE;
 stOut.xPublishAlarm := FALSE;
+stOut.xPublishEvent := FALSE;
 stOut.uiMissedHeartbeats := 0;
 stOut.sNamespaceUri := stConfig.tOpcUaNamespaceUri;
 stOut.sMeasurementClass := 'none';
@@ -117,6 +123,7 @@ VAR_IN_OUT
 END_VAR
 VAR
     xHeartbeatEdge : BOOL;
+    xNewTimelineEvent : BOOL;
 END_VAR
 
 // Cyclic execution function. Provides deterministic sample strobes for Telegraf/SCADA.
@@ -125,9 +132,14 @@ stOut.xPublishConveyor := FALSE;
 stOut.xPublishDiverter := FALSE;
 stOut.xPublishKPI := FALSE;
 stOut.xPublishAlarm := FALSE;
+stOut.xPublishEvent := FALSE;
 stOut.sNamespaceUri := stConfig.tOpcUaNamespaceUri;
+stOut.stLastEvent := stIn.stTimeline.stLastEvent;
 
 xHeartbeatEdge := stIn.xCollectorHeartbeat <> stContext.xHeartbeatLast;
+xNewTimelineEvent := stIn.stTimeline.stLastEvent.xActive
+                     AND (stIn.stTimeline.stLastEvent.udiSequence <> stContext.udiLastEventSequence);
+
 IF xHeartbeatEdge THEN
     stContext.rHeartbeatElapsed_s := 0.0;
     stOut.uiMissedHeartbeats := 0;
@@ -170,9 +182,16 @@ IF stOut.xHistorianHealthy THEN
         stOut.xPublishKPI := TRUE;
         stOut.xPublishAlarm := stIn.xActiveAlarm;
     END_IF;
+    IF xNewTimelineEvent THEN
+        stOut.xPublishEvent := TRUE;
+        stContext.udiLastEventSequence := stIn.stTimeline.stLastEvent.udiSequence;
+    END_IF;
 END_IF;
 
-IF stOut.xPublishAlarm THEN
+IF stOut.xPublishEvent THEN
+    stOut.sMeasurementClass := 'event_timeline';
+    stOut.sLineProtocolPayload := 'event_timeline new_event=true';
+ELSIF stOut.xPublishAlarm THEN
     stOut.sMeasurementClass := 'alarms_events';
     stOut.sLineProtocolPayload := 'alarms_events active=true';
 ELSIF stOut.xPublishKPI THEN

@@ -15,18 +15,6 @@ TYPE E_AlarmManagerState :
 ) INT;
 END_TYPE
 
-TYPE E_MHMCAlarmCode :
-(
-    ALARM_NONE        := 0,
-    ALARM_GENERAL_JAM := 100,
-    ALARM_DIVERTER_1  := 200,
-    ALARM_DIVERTER_2  := 210,
-    ALARM_AIR_PRESSURE:= 300,
-    ALARM_VFD_FAULT   := 400,
-    ALARM_ESTOP       := 1000
-) INT;
-END_TYPE
-
 TYPE ST_AlarmManagerConfig :
 STRUCT
     rFlashPeriod_s : REAL; // Stack light flash interval.
@@ -42,7 +30,9 @@ STRUCT
     xJamWarning         : BOOL;          // Jam detector pre-alarm.
     xDiverter1Faulted   : BOOL;          // Diverter 1 fault.
     xDiverter2Faulted   : BOOL;          // Diverter 2 fault.
+    xRouteFault         : BOOL;          // Routing/misroute/queue fault.
     ePackMLState        : E_PackML_State; // Station state for light logic.
+    eCurrentMode        : E_PackML_Mode;  // Current station mode for event context.
     xAcknowledge        : BOOL;          // HMI/SCADA alarm acknowledge.
     xReset              : BOOL;          // Alarm reset when root cause clear.
     rCycleTime_s        : REAL;          // PLC task interval for tests.
@@ -54,6 +44,7 @@ STRUCT
     xAnyAlarmActive     : BOOL;          // Aggregate active alarm.
     xAnyUnacked         : BOOL;          // Active or latched unacknowledged alarm.
     eActiveAlarmCode    : E_MHMCAlarmCode; // Highest-priority active alarm.
+    uiActiveAlarmCode   : UINT;          // Numeric alarm code for OPC UA/event payloads.
     uiSeverity          : UINT;          // OPC UA AlarmCondition severity 1..1000.
     xGeneralJamAlarm    : BOOL;          // OPC UA GeneralJamAlarm active state.
     xDiverter1Alarm     : BOOL;          // OPC UA Diverter1Fault active state.
@@ -64,6 +55,7 @@ STRUCT
     xStackRed           : BOOL;          // Abort/fault indicator.
     xSounder            : BOOL;          // Audible alarm output.
     sActiveMessage      : STRING(80);    // Alarm text for SCADA.
+    stTimeline          : ST_MHMCEventTimeline; // Alarm/event timeline ring buffer.
 END_STRUCT
 END_TYPE
 
@@ -72,8 +64,13 @@ STRUCT
     eState          : E_AlarmManagerState;
     xInitialized    : BOOL;
     xAckLatched     : BOOL;
+    xAlarmActiveLast: BOOL;
+    xAckLast        : BOOL;
+    xResetLast      : BOOL;
     xFlashState     : BOOL;
     rFlashElapsed_s : REAL;
+    rRuntime_s      : REAL;
+    eLastAlarmCode  : E_MHMCAlarmCode;
 END_STRUCT
 END_TYPE
 
@@ -90,12 +87,18 @@ END_VAR
 stContext.eState := E_AlarmManagerState.ALARM_MGR_NORMAL;
 stContext.xInitialized := TRUE;
 stContext.xAckLatched := FALSE;
+stContext.xAlarmActiveLast := FALSE;
+stContext.xAckLast := FALSE;
+stContext.xResetLast := FALSE;
 stContext.xFlashState := FALSE;
 stContext.rFlashElapsed_s := 0.0;
+stContext.rRuntime_s := 0.0;
+stContext.eLastAlarmCode := E_MHMCAlarmCode.ALARM_NONE;
 
 stOut.xAnyAlarmActive := FALSE;
 stOut.xAnyUnacked := FALSE;
 stOut.eActiveAlarmCode := E_MHMCAlarmCode.ALARM_NONE;
+stOut.uiActiveAlarmCode := 0;
 stOut.uiSeverity := 0;
 stOut.xGeneralJamAlarm := FALSE;
 stOut.xDiverter1Alarm := FALSE;
@@ -106,6 +109,7 @@ stOut.xStackYellow := FALSE;
 stOut.xStackRed := FALSE;
 stOut.xSounder := FALSE;
 stOut.sActiveMessage := 'Alarm manager initialised';
+F_EventTimeline_Clear(stTimeline := stOut.stTimeline);
 
 F_AlarmManager_Init := TRUE;
 END_FUNCTION
@@ -121,6 +125,8 @@ VAR_IN_OUT
 END_VAR
 
 // Cyclic execution function. Highest severity wins; acknowledgement is separated from reset.
+stOut.stTimeline.xNewEvent := FALSE;
+stContext.rRuntime_s := stContext.rRuntime_s + stIn.rCycleTime_s;
 stContext.rFlashElapsed_s := stContext.rFlashElapsed_s + stIn.rCycleTime_s;
 IF stContext.rFlashElapsed_s >= stConfig.rFlashPeriod_s THEN
     stContext.xFlashState := NOT stContext.xFlashState;
@@ -135,6 +141,7 @@ stOut.xAnyAlarmActive := stOut.xGeneralJamAlarm
                          OR stOut.xDiverter1Alarm
                          OR stOut.xDiverter2Alarm
                          OR stOut.xEStopAlarm
+                         OR stIn.xRouteFault
                          OR stIn.xVfdFault
                          OR NOT stIn.xAirPressureOK;
 
@@ -148,46 +155,61 @@ END_IF;
 IF NOT stContext.xInitialized THEN
     stContext.eState := E_AlarmManagerState.ALARM_MGR_UNINITIALISED;
     stOut.eActiveAlarmCode := E_MHMCAlarmCode.ALARM_NONE;
+    stOut.uiActiveAlarmCode := 0;
     stOut.uiSeverity := 0;
     stOut.sActiveMessage := 'Alarm manager not initialised';
 ELSIF NOT stIn.xSafetyLoopOK THEN
     stContext.eState := E_AlarmManagerState.ALARM_MGR_ABORT;
     stOut.eActiveAlarmCode := E_MHMCAlarmCode.ALARM_ESTOP;
+    stOut.uiActiveAlarmCode := 1000;
     stOut.uiSeverity := 1000;
     stOut.sActiveMessage := 'Emergency stop circuit tripped';
 ELSIF stIn.xDiverter1Faulted THEN
     stContext.eState := E_AlarmManagerState.ALARM_MGR_FAULT;
     stOut.eActiveAlarmCode := E_MHMCAlarmCode.ALARM_DIVERTER_1;
+    stOut.uiActiveAlarmCode := 200;
     stOut.uiSeverity := 900;
     stOut.sActiveMessage := 'Diverter 1 pneumatic actuator fault';
 ELSIF stIn.xDiverter2Faulted THEN
     stContext.eState := E_AlarmManagerState.ALARM_MGR_FAULT;
     stOut.eActiveAlarmCode := E_MHMCAlarmCode.ALARM_DIVERTER_2;
+    stOut.uiActiveAlarmCode := 210;
     stOut.uiSeverity := 900;
     stOut.sActiveMessage := 'Diverter 2 pneumatic actuator fault';
+ELSIF stIn.xRouteFault THEN
+    stContext.eState := E_AlarmManagerState.ALARM_MGR_FAULT;
+    stOut.eActiveAlarmCode := E_MHMCAlarmCode.ALARM_ROUTE_FAULT;
+    stOut.uiActiveAlarmCode := 250;
+    stOut.uiSeverity := 850;
+    stOut.sActiveMessage := 'Routing verification or FIFO fault active';
 ELSIF stIn.xJamAlarm THEN
     stContext.eState := E_AlarmManagerState.ALARM_MGR_FAULT;
     stOut.eActiveAlarmCode := E_MHMCAlarmCode.ALARM_GENERAL_JAM;
+    stOut.uiActiveAlarmCode := 100;
     stOut.uiSeverity := 800;
     stOut.sActiveMessage := 'Package jam detected on main conveyor';
 ELSIF NOT stIn.xAirPressureOK THEN
     stContext.eState := E_AlarmManagerState.ALARM_MGR_FAULT;
     stOut.eActiveAlarmCode := E_MHMCAlarmCode.ALARM_AIR_PRESSURE;
+    stOut.uiActiveAlarmCode := 300;
     stOut.uiSeverity := 700;
     stOut.sActiveMessage := 'Pneumatic pressure below permissive threshold';
 ELSIF stIn.xVfdFault THEN
     stContext.eState := E_AlarmManagerState.ALARM_MGR_FAULT;
     stOut.eActiveAlarmCode := E_MHMCAlarmCode.ALARM_VFD_FAULT;
+    stOut.uiActiveAlarmCode := 400;
     stOut.uiSeverity := 700;
     stOut.sActiveMessage := 'Conveyor VFD fault active';
 ELSIF stIn.xJamWarning OR (stIn.ePackMLState = E_PackML_State.HELD) THEN
     stContext.eState := E_AlarmManagerState.ALARM_MGR_WARNING;
     stOut.eActiveAlarmCode := E_MHMCAlarmCode.ALARM_NONE;
+    stOut.uiActiveAlarmCode := 0;
     stOut.uiSeverity := 300;
     stOut.sActiveMessage := 'Cell warning or held state active';
 ELSE
     stContext.eState := E_AlarmManagerState.ALARM_MGR_NORMAL;
     stOut.eActiveAlarmCode := E_MHMCAlarmCode.ALARM_NONE;
+    stOut.uiActiveAlarmCode := 0;
     stOut.uiSeverity := 0;
     stOut.sActiveMessage := 'No active alarms';
 END_IF;
@@ -202,6 +224,70 @@ stOut.xStackRed := stOut.xEStopAlarm
                    OR (stContext.eState = E_AlarmManagerState.ALARM_MGR_FAULT)
                    OR (stContext.eState = E_AlarmManagerState.ALARM_MGR_ABORT);
 stOut.xSounder := stOut.xAnyUnacked AND (stOut.uiSeverity >= 800);
+
+// Event logging: log alarm raise/change, clear, acknowledge, and reset as deterministic ring-buffer records.
+IF stOut.xAnyAlarmActive AND ((stOut.eActiveAlarmCode <> stContext.eLastAlarmCode) OR NOT stContext.xAlarmActiveLast) THEN
+    F_EventTimeline_Append(
+        rTimestamp_s := stContext.rRuntime_s,
+        eClass := E_MHMCEventClass.EVENT_ALARM,
+        uiCode := stOut.uiActiveAlarmCode,
+        uiSeverity := stOut.uiSeverity,
+        ePackMLState := stIn.ePackMLState,
+        eMode := stIn.eCurrentMode,
+        udiPackageID := 0,
+        eRouteTarget := E_RouteTarget.ROUTE_NONE,
+        sMessage := stOut.sActiveMessage,
+        stTimeline := stOut.stTimeline
+    );
+ELSIF (NOT stOut.xAnyAlarmActive) AND stContext.xAlarmActiveLast THEN
+    F_EventTimeline_Append(
+        rTimestamp_s := stContext.rRuntime_s,
+        eClass := E_MHMCEventClass.EVENT_RECOVERY,
+        uiCode := 0,
+        uiSeverity := 0,
+        ePackMLState := stIn.ePackMLState,
+        eMode := stIn.eCurrentMode,
+        udiPackageID := 0,
+        eRouteTarget := E_RouteTarget.ROUTE_NONE,
+        sMessage := 'Alarm state cleared',
+        stTimeline := stOut.stTimeline
+    );
+END_IF;
+
+IF stIn.xAcknowledge AND NOT stContext.xAckLast THEN
+    F_EventTimeline_Append(
+        rTimestamp_s := stContext.rRuntime_s,
+        eClass := E_MHMCEventClass.EVENT_COMMAND,
+        uiCode := 1,
+        uiSeverity := 0,
+        ePackMLState := stIn.ePackMLState,
+        eMode := stIn.eCurrentMode,
+        udiPackageID := 0,
+        eRouteTarget := E_RouteTarget.ROUTE_NONE,
+        sMessage := 'Alarm acknowledged',
+        stTimeline := stOut.stTimeline
+    );
+END_IF;
+
+IF stIn.xReset AND NOT stContext.xResetLast THEN
+    F_EventTimeline_Append(
+        rTimestamp_s := stContext.rRuntime_s,
+        eClass := E_MHMCEventClass.EVENT_RECOVERY,
+        uiCode := 2,
+        uiSeverity := 0,
+        ePackMLState := stIn.ePackMLState,
+        eMode := stIn.eCurrentMode,
+        udiPackageID := 0,
+        eRouteTarget := E_RouteTarget.ROUTE_NONE,
+        sMessage := 'Alarm reset requested',
+        stTimeline := stOut.stTimeline
+    );
+END_IF;
+
+stContext.eLastAlarmCode := stOut.eActiveAlarmCode;
+stContext.xAlarmActiveLast := stOut.xAnyAlarmActive;
+stContext.xAckLast := stIn.xAcknowledge;
+stContext.xResetLast := stIn.xReset;
 
 F_AlarmManager_Cyclic := stContext.xInitialized;
 END_FUNCTION
@@ -232,4 +318,3 @@ eState := stContext.eState;
 xInitialized := stContext.xInitialized;
 xInitLast := xInit;
 END_FUNCTION_BLOCK
-

@@ -19,6 +19,7 @@ TYPE ST_KPIServiceConfig :
 STRUCT
     rPerformanceFactor : REAL; // FDS target sorting velocity efficiency, e.g. 0.96.
     rTargetRate_ppm    : REAL; // Target packages per minute for throughput trending.
+    xUseRoutePulses    : BOOL; // TRUE uses route verified pulses instead of raw PE edges.
 END_STRUCT
 END_TYPE
 
@@ -27,6 +28,12 @@ STRUCT
     xPE4LaneA        : BOOL;          // Lane A verification sensor.
     xPE5LaneB        : BOOL;          // Lane B verification sensor.
     xPE6Reject       : BOOL;          // Reject verification sensor.
+    xLaneAVerifiedPulse : BOOL;       // Route module verified Lane A package.
+    xLaneBVerifiedPulse : BOOL;       // Route module verified Lane B package.
+    xRejectVerifiedPulse: BOOL;       // Route module verified reject package.
+    xPackageRegisteredPulse : BOOL;   // Package entered FIFO.
+    xScanGoodPulse    : BOOL;         // Scanner returned a valid barcode.
+    xScanBadPulse     : BOOL;         // Scanner failed or forced reject.
     ePackMLState     : E_PackML_State; // Station state for availability.
     xFaultDowntime   : BOOL;          // Fault/held downtime active.
     xResetCounters   : BOOL;          // KPI reset command.
@@ -40,6 +47,9 @@ STRUCT
     udiLaneAPackages     : UDINT; // Lane A count.
     udiLaneBPackages     : UDINT; // Lane B count.
     udiRejectPackages    : UDINT; // Reject count.
+    udiRegisteredPackages: UDINT; // Packages registered at PE1.
+    udiGoodScans         : UDINT; // Scanner good-read count.
+    udiBadScans          : UDINT; // Scanner bad-read count.
     rAvailability        : REAL;  // Execute / scheduled time.
     rPerformance         : REAL;  // Target sorting velocity efficiency.
     rQuality             : REAL;  // (Total - Reject) / Total.
@@ -56,6 +66,9 @@ STRUCT
     xPE4Last          : BOOL;
     xPE5Last          : BOOL;
     xPE6Last          : BOOL;
+    xRegisteredLast    : BOOL;
+    xGoodScanLast      : BOOL;
+    xBadScanLast       : BOOL;
     rExecuteTime_s    : REAL;
     rFaultDowntime_s  : REAL;
     rScheduledTime_s  : REAL;
@@ -77,6 +90,9 @@ stContext.xInitialized := TRUE;
 stContext.xPE4Last := FALSE;
 stContext.xPE5Last := FALSE;
 stContext.xPE6Last := FALSE;
+stContext.xRegisteredLast := FALSE;
+stContext.xGoodScanLast := FALSE;
+stContext.xBadScanLast := FALSE;
 stContext.rExecuteTime_s := 0.0;
 stContext.rFaultDowntime_s := 0.0;
 stContext.rScheduledTime_s := 0.0;
@@ -85,6 +101,9 @@ stOut.udiTotalPackages := 0;
 stOut.udiLaneAPackages := 0;
 stOut.udiLaneBPackages := 0;
 stOut.udiRejectPackages := 0;
+stOut.udiRegisteredPackages := 0;
+stOut.udiGoodScans := 0;
+stOut.udiBadScans := 0;
 stOut.rAvailability := 1.0;
 stOut.rPerformance := stConfig.rPerformanceFactor;
 stOut.rQuality := 1.0;
@@ -108,6 +127,13 @@ VAR
     xPE4Rise : BOOL;
     xPE5Rise : BOOL;
     xPE6Rise : BOOL;
+    xLaneAEvent : BOOL;
+    xLaneBEvent : BOOL;
+    xRejectEvent: BOOL;
+    xRegisteredRise : BOOL;
+    xGoodScanRise   : BOOL;
+    xBadScanRise    : BOOL;
+    rRawPerformance : REAL;
 END_VAR
 
 // Cyclic execution function. Sensor edges drive counters; PackML state drives availability.
@@ -120,23 +146,47 @@ IF stIn.xResetCounters THEN
     stOut.udiLaneAPackages := 0;
     stOut.udiLaneBPackages := 0;
     stOut.udiRejectPackages := 0;
+    stOut.udiRegisteredPackages := 0;
+    stOut.udiGoodScans := 0;
+    stOut.udiBadScans := 0;
 END_IF;
 
 xPE4Rise := stIn.xPE4LaneA AND NOT stContext.xPE4Last;
 xPE5Rise := stIn.xPE5LaneB AND NOT stContext.xPE5Last;
 xPE6Rise := stIn.xPE6Reject AND NOT stContext.xPE6Last;
+xLaneAEvent := xPE4Rise;
+xLaneBEvent := xPE5Rise;
+xRejectEvent := xPE6Rise;
+IF stConfig.xUseRoutePulses THEN
+    xLaneAEvent := stIn.xLaneAVerifiedPulse;
+    xLaneBEvent := stIn.xLaneBVerifiedPulse;
+    xRejectEvent := stIn.xRejectVerifiedPulse;
+END_IF;
 
-IF xPE4Rise THEN
+xRegisteredRise := stIn.xPackageRegisteredPulse AND NOT stContext.xRegisteredLast;
+xGoodScanRise := stIn.xScanGoodPulse AND NOT stContext.xGoodScanLast;
+xBadScanRise := stIn.xScanBadPulse AND NOT stContext.xBadScanLast;
+
+IF xLaneAEvent THEN
     stOut.udiLaneAPackages := stOut.udiLaneAPackages + 1;
     stOut.udiTotalPackages := stOut.udiTotalPackages + 1;
 END_IF;
-IF xPE5Rise THEN
+IF xLaneBEvent THEN
     stOut.udiLaneBPackages := stOut.udiLaneBPackages + 1;
     stOut.udiTotalPackages := stOut.udiTotalPackages + 1;
 END_IF;
-IF xPE6Rise THEN
+IF xRejectEvent THEN
     stOut.udiRejectPackages := stOut.udiRejectPackages + 1;
     stOut.udiTotalPackages := stOut.udiTotalPackages + 1;
+END_IF;
+IF xRegisteredRise THEN
+    stOut.udiRegisteredPackages := stOut.udiRegisteredPackages + 1;
+END_IF;
+IF xGoodScanRise THEN
+    stOut.udiGoodScans := stOut.udiGoodScans + 1;
+END_IF;
+IF xBadScanRise THEN
+    stOut.udiBadScans := stOut.udiBadScans + 1;
 END_IF;
 
 IF stIn.ePackMLState = E_PackML_State.EXECUTE THEN
@@ -159,7 +209,16 @@ ELSE
     stOut.rThroughput_ppm := 0.0;
 END_IF;
 
-stOut.rPerformance := stConfig.rPerformanceFactor;
+IF stConfig.rTargetRate_ppm > 0.0 THEN
+    rRawPerformance := stOut.rThroughput_ppm / stConfig.rTargetRate_ppm;
+    IF rRawPerformance > 1.0 THEN
+        rRawPerformance := 1.0;
+    END_IF;
+    stOut.rPerformance := rRawPerformance * stConfig.rPerformanceFactor;
+ELSE
+    stOut.rPerformance := stConfig.rPerformanceFactor;
+END_IF;
+
 IF stOut.udiTotalPackages > 0 THEN
     stOut.rQuality := (UDINT_TO_REAL(stOut.udiTotalPackages) - UDINT_TO_REAL(stOut.udiRejectPackages))
                       / UDINT_TO_REAL(stOut.udiTotalPackages);
@@ -173,6 +232,9 @@ stOut.sStatusText := 'KPI service calculated counters and OEE';
 stContext.xPE4Last := stIn.xPE4LaneA;
 stContext.xPE5Last := stIn.xPE5LaneB;
 stContext.xPE6Last := stIn.xPE6Reject;
+stContext.xRegisteredLast := stIn.xPackageRegisteredPulse;
+stContext.xGoodScanLast := stIn.xScanGoodPulse;
+stContext.xBadScanLast := stIn.xScanBadPulse;
 F_KPIService_Cyclic := stContext.xInitialized;
 END_FUNCTION
 
@@ -202,4 +264,3 @@ eState := stContext.eState;
 xInitialized := stContext.xInitialized;
 xInitLast := xInit;
 END_FUNCTION_BLOCK
-

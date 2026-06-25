@@ -1,0 +1,875 @@
+﻿{
+    "GeneratedAt":  "2026-06-25 15:23:55 +02:00",
+    "Workspace":  "C:\\Users\\chand\\.gemini\\antigravity\\scratch\\material_handling_cell",
+    "Scope":  "static source contracts; deterministic offline FAT/reference scenarios; TwinCAT compiler gate",
+    "Passed":  144,
+    "Failed":  0,
+    "Total":  144,
+    "HardwareCommissioning":  "Not executed in this environment; requires physical I/O, safety validation, pneumatics, VFD, scanner, diverters, OPC UA collector, and signed FAT/SAT.",
+    "Results":  [
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "LineSupervisor source file exists",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "LineSupervisor has typed input structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "LineSupervisor has typed output structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "LineSupervisor has configuration structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "LineSupervisor has context structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "LineSupervisor has enumerated state",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "LineSupervisor has init function",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "LineSupervisor has cyclic function",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "LineSupervisor has FB wrapper",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "LineSupervisor has meaningful comments",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "StationController source file exists",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "StationController has typed input structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "StationController has typed output structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "StationController has configuration structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "StationController has context structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "StationController has enumerated state",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "StationController has init function",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "StationController has cyclic function",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "StationController has FB wrapper",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "StationController has meaningful comments",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "DiverterController source file exists",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "DiverterController has typed input structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "DiverterController has typed output structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "DiverterController has configuration structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "DiverterController has context structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "DiverterController has enumerated state",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "DiverterController has init function",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "DiverterController has cyclic function",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "DiverterController has FB wrapper",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "DiverterController has meaningful comments",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "JamDetector source file exists",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "JamDetector has typed input structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "JamDetector has typed output structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "JamDetector has configuration structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "JamDetector has context structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "JamDetector has enumerated state",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "JamDetector has init function",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "JamDetector has cyclic function",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "JamDetector has FB wrapper",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "JamDetector has meaningful comments",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "HistorianConnector source file exists",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "HistorianConnector has typed input structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "HistorianConnector has typed output structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "HistorianConnector has configuration structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "HistorianConnector has context structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "HistorianConnector has enumerated state",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "HistorianConnector has init function",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "HistorianConnector has cyclic function",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "HistorianConnector has FB wrapper",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "HistorianConnector has meaningful comments",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "KPIService source file exists",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "KPIService has typed input structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "KPIService has typed output structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "KPIService has configuration structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "KPIService has context structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "KPIService has enumerated state",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "KPIService has init function",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "KPIService has cyclic function",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "KPIService has FB wrapper",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "KPIService has meaningful comments",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "AlarmManager source file exists",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "AlarmManager has typed input structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "AlarmManager has typed output structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "AlarmManager has configuration structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "AlarmManager has context structure",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "AlarmManager has enumerated state",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "AlarmManager has init function",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "AlarmManager has cyclic function",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "AlarmManager has FB wrapper",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "AlarmManager has meaningful comments",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "PLCopen motion command adapter exists",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "recipe/configuration type exists",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "event timeline ring buffer exists",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "symbolic I/O only",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "no unresolved TODO markers",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "SourceContracts",
+                        "Name":  "TwinCAT/CODESYS empty strings use single quotes",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "TwinCATProject",
+                        "Name":  "TwinCAT wrapper regeneration skipped for existing build evidence",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "TwinCATProject",
+                        "Name":  "generated .plcproj exists",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "TwinCATProject",
+                        "Name":  "generated solution exists",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "TwinCATProject",
+                        "Name":  "generated .plcproj XML parses",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "TwinCATProject",
+                        "Name":  "generated project preserves TwinCAT PLC options",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "TwinCATProject",
+                        "Name":  "generated project includes module POUs",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "TwinCATProject",
+                        "Name":  "generated project includes DUTs",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "RecipeMatrix",
+                        "Name":  "default fallback recipe loads",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "RecipeMatrix",
+                        "Name":  "default fallback Lane A pattern",
+                        "Passed":  true,
+                        "Detail":  "expected=[LANE-A], actual=[LANE-A]"
+                    },
+                    {
+                        "Suite":  "RecipeMatrix",
+                        "Name":  "book recipe A loads",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "RecipeMatrix",
+                        "Name":  "book recipe A pattern dispatch",
+                        "Passed":  true,
+                        "Detail":  "expected=[A-SKU], actual=[A-SKU]"
+                    },
+                    {
+                        "Suite":  "RecipeMatrix",
+                        "Name":  "book recipe B accepts speed trim inside limits",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "RecipeMatrix",
+                        "Name":  "book recipe B speed trim applied",
+                        "Passed":  true,
+                        "Detail":  "expected=[0.6], actual=[0.6], tolerance=[0.0001]"
+                    },
+                    {
+                        "Suite":  "RecipeMatrix",
+                        "Name":  "MES/HMI payload recipe loads",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "RecipeMatrix",
+                        "Name":  "payload route pattern retained",
+                        "Passed":  true,
+                        "Detail":  "expected=[PAY-B], actual=[PAY-B]"
+                    },
+                    {
+                        "Suite":  "RecipeMatrix",
+                        "Name":  "disabled recipe is rejected",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "RecipeMatrix",
+                        "Name":  "overspeed recipe is rejected",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "RecipeMatrix",
+                        "Name":  "missing recipe ID is rejected",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "RoutingLogic",
+                        "Name":  "Lane A package increments total",
+                        "Passed":  true,
+                        "Detail":  "expected=[1], actual=[1]"
+                    },
+                    {
+                        "Suite":  "RoutingLogic",
+                        "Name":  "Lane A package increments lane A",
+                        "Passed":  true,
+                        "Detail":  "expected=[1], actual=[1]"
+                    },
+                    {
+                        "Suite":  "RoutingLogic",
+                        "Name":  "Lane A route completes without fault",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "RoutingLogic",
+                        "Name":  "Lane B package increments total",
+                        "Passed":  true,
+                        "Detail":  "expected=[1], actual=[1]"
+                    },
+                    {
+                        "Suite":  "RoutingLogic",
+                        "Name":  "Lane B package increments lane B",
+                        "Passed":  true,
+                        "Detail":  "expected=[1], actual=[1]"
+                    },
+                    {
+                        "Suite":  "RoutingLogic",
+                        "Name":  "Lane B route completes without fault",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "RoutingLogic",
+                        "Name":  "bad scan routes to reject",
+                        "Passed":  true,
+                        "Detail":  "expected=[1], actual=[1]"
+                    },
+                    {
+                        "Suite":  "RoutingLogic",
+                        "Name":  "bad scan pulse is generated",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "RoutingLogic",
+                        "Name":  "FIFO overflow latches route fault",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "RoutingLogic",
+                        "Name":  "diverter not ready at route window faults",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "RoutingLogic",
+                        "Name":  "PE2 trigger without package faults",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "RoutingLogic",
+                        "Name":  "manual mode hold-to-run commands without FIFO mutation",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "RoutingLogic",
+                        "Name":  "maintenance mode blocks commands without safeguards",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "RoutingLogic",
+                        "Name":  "maintenance mode permits hold-to-run with safeguards",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "JamRecovery",
+                        "Name":  "warning appears before jam limit",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "JamRecovery",
+                        "Name":  "PE2 jam latches alarm and hold request source",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "JamRecovery",
+                        "Name":  "jam counter increments once on rising latch",
+                        "Passed":  true,
+                        "Detail":  "expected=[1], actual=[1]"
+                    },
+                    {
+                        "Suite":  "JamRecovery",
+                        "Name":  "reset is rejected while sensor remains blocked",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "JamRecovery",
+                        "Name":  "recovery ready only after sensors clear",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "JamRecovery",
+                        "Name":  "reset accepted from HELD after clear",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "JamRecovery",
+                        "Name":  "dynamic limit clamps at slow speed",
+                        "Passed":  true,
+                        "Detail":  "expected=[6], actual=[6], tolerance=[0.0001]"
+                    },
+                    {
+                        "Suite":  "DiverterController",
+                        "Name":  "auto sequence extends verifies retracts and completes",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "DiverterController",
+                        "Name":  "extend timeout faults",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "DiverterController",
+                        "Name":  "verification timeout faults",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "DiverterController",
+                        "Name":  "manual hold limit faults",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "DiverterController",
+                        "Name":  "force retract de-energises solenoid",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "StationController",
+                        "Name":  "reset sequence reaches IDLE",
+                        "Passed":  true,
+                        "Detail":  "expected=[IDLE], actual=[IDLE]"
+                    },
+                    {
+                        "Suite":  "StationController",
+                        "Name":  "start sequence reaches EXECUTE and runs conveyor",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "StationController",
+                        "Name":  "jam forces HOLDING then HELD quick stop",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "StationController",
+                        "Name":  "unhold returns to EXECUTE",
+                        "Passed":  true,
+                        "Detail":  "expected=[EXECUTE], actual=[EXECUTE]"
+                    },
+                    {
+                        "Suite":  "StationController",
+                        "Name":  "safety loop drop aborts station",
+                        "Passed":  true,
+                        "Detail":  "expected=[ABORTED], actual=[ABORTED]"
+                    },
+                    {
+                        "Suite":  "StationController",
+                        "Name":  "clear recovers ABORTED to STOPPED",
+                        "Passed":  true,
+                        "Detail":  "expected=[STOPPED], actual=[STOPPED]"
+                    },
+                    {
+                        "Suite":  "StationController",
+                        "Name":  "maintenance requires key and clamps jog speed",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "KPIService",
+                        "Name":  "route pulses update total count",
+                        "Passed":  true,
+                        "Detail":  "expected=[3], actual=[3]"
+                    },
+                    {
+                        "Suite":  "KPIService",
+                        "Name":  "reject count updates",
+                        "Passed":  true,
+                        "Detail":  "expected=[1], actual=[1]"
+                    },
+                    {
+                        "Suite":  "KPIService",
+                        "Name":  "quality excludes reject",
+                        "Passed":  true,
+                        "Detail":  "expected=[0.666666666666667], actual=[0.666666666666667], tolerance=[0.0001]"
+                    },
+                    {
+                        "Suite":  "KPIService",
+                        "Name":  "availability includes held downtime",
+                        "Passed":  true,
+                        "Detail":  "expected=[0.75], actual=[0.75], tolerance=[0.0001]"
+                    },
+                    {
+                        "Suite":  "KPIService",
+                        "Name":  "OEE is calculated from availability performance quality",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "KPIService",
+                        "Name":  "reset counters clears KPI totals",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "AlarmManager",
+                        "Name":  "jam alarm drives code severity sounder and event",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "AlarmManager",
+                        "Name":  "acknowledge silences unacked sounder and logs command",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "AlarmManager",
+                        "Name":  "clearing root cause appends recovery event",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "AlarmManager",
+                        "Name":  "reset command appends recovery request",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "AlarmManager",
+                        "Name":  "E-stop priority overrides jam",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "HistorianConnector",
+                        "Name":  "healthy historian publishes KPI alarm and event",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "HistorianConnector",
+                        "Name":  "missed heartbeat drives unhealthy/backoff condition",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "FATSequence",
+                        "Name":  "startup, Lane A route, jam hold, reset, and unhold complete",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "FATSequence",
+                        "Name":  "FAT KPI reflects verified package",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "TwinCATCompile",
+                        "Name":  "existing TwinCAT build log reports success",
+                        "Passed":  true,
+                        "Detail":  ""
+                    },
+                    {
+                        "Suite":  "TwinCATCompile",
+                        "Name":  "TwinCAT build artifact evidence recorded",
+                        "Passed":  true,
+                        "Detail":  "Loose .tmc is not present now; accepted because existing transcript proves LastBuildInfo 0 and this evidence mode does not launch XAE."
+                    }
+                ]
+}

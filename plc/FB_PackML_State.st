@@ -127,3 +127,4 @@ CASE eCurrentState OF
         END_IF;
 
 END_CASE;
+END_FUNCTION_BLOCK

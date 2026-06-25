@@ -72,3 +72,4 @@ END_IF;
 // Conveyor Status outputs
 stStatus.xFaulted := xJamAlarm OR xFaultDrive;
 xReady := NOT stStatus.xFaulted;
+END_FUNCTION_BLOCK

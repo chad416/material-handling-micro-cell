@@ -24,6 +24,9 @@ STRUCT
     rRetractTimeout_s      : REAL;       // Max time to return home.
     rWorkDwell_s           : REAL;       // Hold time after work switch.
     rVerificationTimeout_s : REAL;       // Max time to see lane PE confirmation.
+    rManualHoldLimit_s     : REAL;       // Max manual/maintenance extend hold.
+    xRequireHomeBeforeFire : BOOL;       // Prevent extend if home switch is not made.
+    xRequireVerification   : BOOL;       // Auto sequence must see PE verification.
 END_STRUCT
 END_TYPE
 
@@ -32,6 +35,12 @@ STRUCT
     xAutoEnable          : BOOL; // True when PackML EXECUTE permits automatic firing.
     xExtendRequest       : BOOL; // Routing sequence asks this diverter to fire.
     xManualExtend        : BOOL; // Maintenance/manual symbolic override.
+    eMode                : E_PackML_Mode; // Current mode for safeguard selection.
+    xManualEnable        : BOOL; // Manual mode permission from StationController.
+    xMaintenanceEnable   : BOOL; // Maintenance permission from StationController.
+    xInterlockOK         : BOOL; // Safety loop, air pressure, and station permission OK.
+    xInhibit             : BOOL; // Higher-level inhibit, e.g. jam recovery or stop.
+    xForceRetract        : BOOL; // Operator/sequence request to de-energise and retract.
     xHomeSensor          : BOOL; // LSx_Home magnetic switch.
     xWorkSensor          : BOOL; // LSx_Work magnetic switch.
     xVerificationSensor  : BOOL; // PE4 or PE5 lane confirmation.
@@ -49,6 +58,8 @@ STRUCT
     xHome                : BOOL; // Mirrored home switch.
     xWork                : BOOL; // Mirrored work switch.
     xVerified            : BOOL; // Lane verification latched for this cycle.
+    xManualActive        : BOOL; // Manual/maintenance command is currently driving the valve.
+    xInterlocked         : BOOL; // Interlocks permit actuation.
     uiFaultCode          : UINT; // 0 none, 1 extend, 2 retract, 3 verify.
     sStatusText          : STRING(80);
 END_STRUCT
@@ -87,6 +98,8 @@ stOut.xFaulted := FALSE;
 stOut.xHome := FALSE;
 stOut.xWork := FALSE;
 stOut.xVerified := FALSE;
+stOut.xManualActive := FALSE;
+stOut.xInterlocked := FALSE;
 stOut.uiFaultCode := 0;
 stOut.sStatusText := 'Diverter controller initialised';
 
@@ -103,7 +116,10 @@ VAR_IN_OUT
     stOut     : ST_DiverterControllerOutput;
 END_VAR
 VAR
-    xFireRequest : BOOL;
+    xAutoFireRequest   : BOOL;
+    xManualFireRequest : BOOL;
+    xFireRequest       : BOOL;
+    xVerificationNeeded: BOOL;
 END_VAR
 
 // Cyclic execution function. Sequence states are deterministic and unit-test friendly.
@@ -114,7 +130,24 @@ END_IF;
 stOut.xDone := FALSE;
 stOut.xHome := stIn.xHomeSensor;
 stOut.xWork := stIn.xWorkSensor;
-xFireRequest := ((stIn.xAutoEnable AND stIn.xExtendRequest) OR stIn.xManualExtend);
+stOut.xInterlocked := stIn.xInterlockOK AND NOT stIn.xInhibit;
+stOut.xManualActive := FALSE;
+xVerificationNeeded := stConfig.xRequireVerification
+                       AND (stIn.eMode = E_PackML_Mode.AUTO);
+xAutoFireRequest := stIn.xAutoEnable AND stIn.xExtendRequest;
+xManualFireRequest := stIn.xManualExtend
+                      AND ((stIn.eMode = E_PackML_Mode.MANUAL AND stIn.xManualEnable)
+                           OR (stIn.eMode = E_PackML_Mode.MAINTENANCE AND stIn.xMaintenanceEnable));
+xFireRequest := stOut.xInterlocked AND (xAutoFireRequest OR xManualFireRequest);
+
+IF stIn.xForceRetract OR NOT stOut.xInterlocked THEN
+    stOut.xCommandExtend := FALSE;
+    IF (stContext.eState <> E_DiverterControllerState.DIVERTER_HOME)
+       AND (stContext.eState <> E_DiverterControllerState.DIVERTER_FAULT) THEN
+        stContext.eState := E_DiverterControllerState.DIVERTER_RETRACTING;
+        stContext.rStateElapsed_s := 0.0;
+    END_IF;
+END_IF;
 
 IF stIn.xResetFault THEN
     stOut.xFaulted := FALSE;
@@ -132,10 +165,18 @@ ELSIF stOut.xFaulted THEN
     stContext.eState := E_DiverterControllerState.DIVERTER_FAULT;
 ELSIF xFireRequest AND NOT stContext.xRequestLast
       AND (stContext.eState = E_DiverterControllerState.DIVERTER_HOME) THEN
-    stContext.eState := E_DiverterControllerState.DIVERTER_EXTENDING;
-    stContext.rStateElapsed_s := 0.0;
-    stOut.xVerified := FALSE;
+    IF stConfig.xRequireHomeBeforeFire AND NOT stIn.xHomeSensor THEN
+        stOut.xFaulted := TRUE;
+        stOut.uiFaultCode := 4; // Fire request issued while actuator was not home.
+    ELSE
+        stContext.eState := E_DiverterControllerState.DIVERTER_EXTENDING;
+        stContext.rStateElapsed_s := 0.0;
+        stOut.xVerified := FALSE;
+    END_IF;
 ELSIF stContext.eState = E_DiverterControllerState.DIVERTER_EXTENDING THEN
+    IF xManualFireRequest THEN
+        stOut.xManualActive := TRUE;
+    END_IF;
     IF stIn.xWorkSensor THEN
         stContext.eState := E_DiverterControllerState.DIVERTER_WORK;
         stContext.rStateElapsed_s := 0.0;
@@ -144,12 +185,18 @@ ELSIF stContext.eState = E_DiverterControllerState.DIVERTER_EXTENDING THEN
         stOut.uiFaultCode := 1;
     END_IF;
 ELSIF stContext.eState = E_DiverterControllerState.DIVERTER_WORK THEN
-    IF stContext.rStateElapsed_s >= stConfig.rWorkDwell_s THEN
+    IF xManualFireRequest AND (stContext.rStateElapsed_s < stConfig.rManualHoldLimit_s) THEN
+        stOut.xManualActive := TRUE;
+    ELSIF xManualFireRequest AND (stConfig.rManualHoldLimit_s > 0.0)
+          AND (stContext.rStateElapsed_s >= stConfig.rManualHoldLimit_s) THEN
+        stOut.xFaulted := TRUE;
+        stOut.uiFaultCode := 5; // Manual hold exceeded configured limit.
+    ELSIF stContext.rStateElapsed_s >= stConfig.rWorkDwell_s THEN
         stContext.eState := E_DiverterControllerState.DIVERTER_VERIFY;
         stContext.rStateElapsed_s := 0.0;
     END_IF;
 ELSIF stContext.eState = E_DiverterControllerState.DIVERTER_VERIFY THEN
-    IF stIn.xVerificationSensor THEN
+    IF (NOT xVerificationNeeded) OR stIn.xVerificationSensor THEN
         stOut.xVerified := TRUE;
         stContext.eState := E_DiverterControllerState.DIVERTER_RETRACTING;
         stContext.rStateElapsed_s := 0.0;
@@ -173,6 +220,10 @@ END_IF;
 stOut.xCommandExtend := (stContext.eState = E_DiverterControllerState.DIVERTER_EXTENDING)
                         OR (stContext.eState = E_DiverterControllerState.DIVERTER_WORK)
                         OR (stContext.eState = E_DiverterControllerState.DIVERTER_VERIFY);
+IF stIn.xForceRetract OR stIn.xInhibit OR NOT stIn.xInterlockOK THEN
+    stOut.xCommandExtend := FALSE;
+END_IF;
+
 stOut.xBusy := (stContext.eState = E_DiverterControllerState.DIVERTER_EXTENDING)
                OR (stContext.eState = E_DiverterControllerState.DIVERTER_WORK)
                OR (stContext.eState = E_DiverterControllerState.DIVERTER_VERIFY)
@@ -218,4 +269,3 @@ eState := stContext.eState;
 xInitialized := stContext.xInitialized;
 xInitLast := xInit;
 END_FUNCTION_BLOCK
-

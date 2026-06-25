@@ -11,6 +11,8 @@ TYPE E_JamDetectorState :
     JAM_DET_CLEAR         := 10,
     JAM_DET_MONITORING    := 20,
     JAM_DET_WARNING       := 30,
+    JAM_DET_WAIT_CLEAR    := 40,
+    JAM_DET_RECOVERING    := 50,
     JAM_DET_JAMMED        := 900
 ) INT;
 END_TYPE
@@ -32,6 +34,9 @@ STRUCT
     xConveyorRunning   : BOOL; // Conveyor feedback.
     rConveyorSpeed_mps : REAL; // Conveyor feedback speed.
     xResetJam          : BOOL; // ResetJam RPC/HMI command.
+    xRecoveryRequest    : BOOL; // StationController is requesting jam recovery/unhold.
+    xAllowAutoRecovery  : BOOL; // TRUE if PackML permissives allow unhold.
+    ePackMLState        : E_PackML_State; // Station state for recovery rules.
     rCycleTime_s       : REAL; // PLC task interval for unit tests.
 END_STRUCT
 END_TYPE
@@ -39,7 +44,12 @@ END_TYPE
 TYPE ST_JamDetectorOutput :
 STRUCT
     xJamAlarm          : BOOL; // Fault flag to StationController.
+    xRequestHold       : BOOL; // One-shot/latched request to force PackML HOLDING.
     xWarning           : BOOL; // Pre-alarm for HMI and beacon logic.
+    xSensorsClear      : BOOL; // All PE watchdog sensors are clear.
+    xRecoveryReady     : BOOL; // Jam alarm is latched but field conditions allow reset.
+    xInRecovery        : BOOL; // Jam recovery sequence is executing.
+    xResetAcceptedPulse: BOOL; // One-cycle confirmation that ResetJam was accepted.
     xBeaconYellowFlash : BOOL; // Symbolic stack light request.
     uiJamSource        : UINT; // 0 none, 1 PE1, 2 PE2, 3 PE3.
     uiTotalJams        : UINT; // OPC UA KPI TotalJams node.
@@ -65,21 +75,37 @@ VAR_INPUT
     stConfig           : ST_JamDetectorConfig;
 END_VAR
 VAR
-    rLimit_s : REAL;
+    rLimit_s     : REAL;
+    rBaseLimit_s : REAL;
+    rMaxLimit_s  : REAL;
+    rRefSpeed_mps: REAL;
 END_VAR
 
 // Dynamic limit increases as conveyor speed drops. It is clamped for slow jog cases.
-IF rConveyorSpeed_mps <= 0.01 THEN
-    rLimit_s := stConfig.rMaximumJamLimit_s;
-ELSE
-    rLimit_s := stConfig.rBaseJamLimit_s * stConfig.rReferenceSpeed_mps / rConveyorSpeed_mps;
+rBaseLimit_s := stConfig.rBaseJamLimit_s;
+IF rBaseLimit_s <= 0.0 THEN
+    rBaseLimit_s := 3.0;
+END_IF;
+rMaxLimit_s := stConfig.rMaximumJamLimit_s;
+IF rMaxLimit_s < rBaseLimit_s THEN
+    rMaxLimit_s := rBaseLimit_s * 2.0;
+END_IF;
+rRefSpeed_mps := stConfig.rReferenceSpeed_mps;
+IF rRefSpeed_mps <= 0.0 THEN
+    rRefSpeed_mps := 0.5;
 END_IF;
 
-IF rLimit_s < stConfig.rBaseJamLimit_s THEN
-    rLimit_s := stConfig.rBaseJamLimit_s;
+IF rConveyorSpeed_mps <= 0.01 THEN
+    rLimit_s := rMaxLimit_s;
+ELSE
+    rLimit_s := rBaseLimit_s * rRefSpeed_mps / rConveyorSpeed_mps;
 END_IF;
-IF rLimit_s > stConfig.rMaximumJamLimit_s THEN
-    rLimit_s := stConfig.rMaximumJamLimit_s;
+
+IF rLimit_s < rBaseLimit_s THEN
+    rLimit_s := rBaseLimit_s;
+END_IF;
+IF rLimit_s > rMaxLimit_s THEN
+    rLimit_s := rMaxLimit_s;
 END_IF;
 
 F_JamDetector_DynamicLimit_s := rLimit_s;
@@ -103,7 +129,12 @@ stContext.rPE2Blocked_s := 0.0;
 stContext.rPE3Blocked_s := 0.0;
 
 stOut.xJamAlarm := FALSE;
+stOut.xRequestHold := FALSE;
 stOut.xWarning := FALSE;
+stOut.xSensorsClear := TRUE;
+stOut.xRecoveryReady := FALSE;
+stOut.xInRecovery := FALSE;
+stOut.xResetAcceptedPulse := FALSE;
 stOut.xBeaconYellowFlash := FALSE;
 stOut.uiJamSource := 0;
 stOut.uiTotalJams := 0;
@@ -124,43 +155,60 @@ VAR_IN_OUT
 END_VAR
 VAR
     rWarnLimit_s : REAL;
+    rWarningRatio: REAL;
     xAnyBlocked  : BOOL;
+    xResetAllowed: BOOL;
 END_VAR
 
 // Cyclic execution function. PE watchdogs are independent and symbolic.
 stOut.rActiveLimit_s := F_JamDetector_DynamicLimit_s(rConveyorSpeed_mps := stIn.rConveyorSpeed_mps, stConfig := stConfig);
-rWarnLimit_s := stOut.rActiveLimit_s * stConfig.rWarningRatio;
+rWarningRatio := stConfig.rWarningRatio;
+IF (rWarningRatio <= 0.0) OR (rWarningRatio >= 1.0) THEN
+    rWarningRatio := 0.8;
+END_IF;
+rWarnLimit_s := stOut.rActiveLimit_s * rWarningRatio;
 xAnyBlocked := stIn.xRawPE1 OR stIn.xRawPE2 OR stIn.xRawPE3;
+stOut.xSensorsClear := NOT xAnyBlocked;
+stOut.xResetAcceptedPulse := FALSE;
+stOut.xRequestHold := stOut.xJamAlarm;
+stOut.xInRecovery := FALSE;
+stOut.xRecoveryReady := stOut.xJamAlarm AND stOut.xSensorsClear;
+xResetAllowed := stIn.xResetJam
+                 AND stOut.xSensorsClear
+                 AND (stIn.xAllowAutoRecovery
+                      OR stIn.xRecoveryRequest
+                      OR (stIn.ePackMLState = E_PackML_State.HELD));
 
-IF stIn.xResetJam THEN
+IF xResetAllowed THEN
     stOut.xJamAlarm := FALSE;
+    stOut.xRequestHold := FALSE;
     stOut.xWarning := FALSE;
     stOut.xBeaconYellowFlash := FALSE;
     stOut.uiJamSource := 0;
     stContext.rPE1Blocked_s := 0.0;
     stContext.rPE2Blocked_s := 0.0;
     stContext.rPE3Blocked_s := 0.0;
-    stContext.eState := E_JamDetectorState.JAM_DET_CLEAR;
+    stContext.eState := E_JamDetectorState.JAM_DET_RECOVERING;
+    stOut.xInRecovery := TRUE;
+    stOut.xResetAcceptedPulse := TRUE;
 END_IF;
 
-IF stIn.xConveyorRunning THEN
-    IF stIn.xRawPE1 THEN
+IF NOT stIn.xRawPE1 THEN
+    stContext.rPE1Blocked_s := 0.0;
+ELSIF stIn.xConveyorRunning THEN
         stContext.rPE1Blocked_s := stContext.rPE1Blocked_s + stIn.rCycleTime_s;
-    ELSE
-        stContext.rPE1Blocked_s := 0.0;
-    END_IF;
+END_IF;
 
-    IF stIn.xRawPE2 THEN
+IF NOT stIn.xRawPE2 THEN
+    stContext.rPE2Blocked_s := 0.0;
+ELSIF stIn.xConveyorRunning THEN
         stContext.rPE2Blocked_s := stContext.rPE2Blocked_s + stIn.rCycleTime_s;
-    ELSE
-        stContext.rPE2Blocked_s := 0.0;
-    END_IF;
+END_IF;
 
-    IF stIn.xRawPE3 THEN
+IF NOT stIn.xRawPE3 THEN
+    stContext.rPE3Blocked_s := 0.0;
+ELSIF stIn.xConveyorRunning THEN
         stContext.rPE3Blocked_s := stContext.rPE3Blocked_s + stIn.rCycleTime_s;
-    ELSE
-        stContext.rPE3Blocked_s := 0.0;
-    END_IF;
 END_IF;
 
 IF NOT stContext.xInitialized THEN
@@ -170,6 +218,7 @@ ELSIF (stContext.rPE1Blocked_s >= stOut.rActiveLimit_s)
       OR (stContext.rPE3Blocked_s >= stOut.rActiveLimit_s) THEN
     stContext.eState := E_JamDetectorState.JAM_DET_JAMMED;
     stOut.xJamAlarm := TRUE;
+    stOut.xRequestHold := TRUE;
     IF stContext.rPE1Blocked_s >= stOut.rActiveLimit_s THEN
         stOut.uiJamSource := 1;
     ELSIF stContext.rPE2Blocked_s >= stOut.rActiveLimit_s THEN
@@ -182,6 +231,9 @@ ELSIF (stContext.rPE1Blocked_s >= rWarnLimit_s)
       OR (stContext.rPE3Blocked_s >= rWarnLimit_s) THEN
     stContext.eState := E_JamDetectorState.JAM_DET_WARNING;
     stOut.xWarning := TRUE;
+ELSIF stOut.xJamAlarm AND stOut.xSensorsClear THEN
+    stContext.eState := E_JamDetectorState.JAM_DET_WAIT_CLEAR;
+    stOut.xRecoveryReady := TRUE;
 ELSE
     stOut.xWarning := FALSE;
     IF xAnyBlocked AND stIn.xConveyorRunning THEN
@@ -197,7 +249,13 @@ END_IF;
 
 stOut.xBeaconYellowFlash := stOut.xWarning OR stOut.xJamAlarm;
 IF stOut.xJamAlarm THEN
-    stOut.sStatusText := 'Package jam detected on main conveyor';
+    IF stOut.xRecoveryReady THEN
+        stOut.sStatusText := 'Jam cleared physically; waiting for ResetJam';
+    ELSE
+        stOut.sStatusText := 'Package jam detected on main conveyor';
+    END_IF;
+ELSIF stOut.xResetAcceptedPulse THEN
+    stOut.sStatusText := 'Jam reset accepted; recovery sequence may unhold';
 ELSIF stOut.xWarning THEN
     stOut.sStatusText := 'Photoeye blocked near jam threshold';
 ELSE
@@ -234,4 +292,3 @@ eState := stContext.eState;
 xInitialized := stContext.xInitialized;
 xInitLast := xInit;
 END_FUNCTION_BLOCK
-
