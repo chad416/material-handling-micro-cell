@@ -7,16 +7,21 @@
 
 set -e
 
-# Configurable Variables
-INFLUX_HOST="http://localhost:8086"
-ORG="AntigravityAutomation"
-BUCKET_TELEMETRY="mhmc_telemetry"
-BUCKET_EVENTS="mhmc_events"
-RETENTION_TELEMETRY="30d"  # Keep raw sensor/VFD logs for 30 days
-RETENTION_EVENTS="365d"    # Keep alarm history and KPIs for 1 year
-ADMIN_USER="admin"
-ADMIN_PASSWORD="SuperSecureAutomationPassword2026!"
-API_TOKEN="AntigravityOpcUaToInfluxdbTelemetryToken2026=="
+# Configurable Variables. Secrets must be injected through the shell,
+# service manager, or CI secret store before this script is run.
+INFLUX_HOST="${MHMC_INFLUX_URL:-http://localhost:8086}"
+ORG="${MHMC_INFLUX_ORG:-AntigravityAutomation}"
+BUCKET_TELEMETRY="${MHMC_INFLUX_BUCKET:-mhmc_telemetry}"
+BUCKET_EVENTS="${MHMC_INFLUX_EVENTS_BUCKET:-mhmc_events}"
+RETENTION_TELEMETRY="${MHMC_INFLUX_RETENTION_TELEMETRY:-30d}"  # Keep raw sensor/VFD logs for 30 days.
+RETENTION_EVENTS="${MHMC_INFLUX_RETENTION_EVENTS:-365d}"       # Keep alarm history and KPIs for 1 year.
+ADMIN_USER="${MHMC_INFLUX_ADMIN_USER:-admin}"
+
+: "${MHMC_INFLUX_ADMIN_PASSWORD:?Set MHMC_INFLUX_ADMIN_PASSWORD before running setup}"
+: "${MHMC_INFLUX_TOKEN:?Set MHMC_INFLUX_TOKEN before running setup}"
+
+ADMIN_PASSWORD="$MHMC_INFLUX_ADMIN_PASSWORD"
+API_TOKEN="$MHMC_INFLUX_TOKEN"
 
 echo "Initializing InfluxDB configuration..."
 
@@ -49,6 +54,6 @@ influx bucket list --host "$INFLUX_HOST" --token "$API_TOKEN" --org "$ORG"
 
 echo "=============================================================================="
 echo "InfluxDB setup completed successfully!"
-echo "API Token for Telegraf: $API_TOKEN"
+echo "API Token for Telegraf: provided through MHMC_INFLUX_TOKEN"
 echo "Org Name: $ORG"
 echo "=============================================================================="
