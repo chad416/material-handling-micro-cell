@@ -8,6 +8,8 @@ This directory contains the automation engineering package for the material hand
 - **SCADA Configuration (InfluxDB & Grafana)**
 - **Semantic OPC UA Server (`opcua_server`)**
 - **Buffered Historian & KPI Query Service (`historian_service`)**
+- **HMI/SCADA screen specification and tag list**
+- **Plain HTML/JS SCADA prototype (`scada-prototype`)**
 - **Engineering Templates & Checklists**
 
 ## OPC UA Server
@@ -31,6 +33,16 @@ protocol writes, computes KPI rollups, and exposes a Grafana-friendly JSON API.
 Credentials are supplied through environment variables such as
 `MHMC_INFLUX_TOKEN` and `MHMC_QUERY_API_TOKEN`; no production secret belongs in
 the repository.
+
+## HMI/SCADA
+The HMI/SCADA specification and tag mapping are documented in:
+
+- `docs/hmi_scada_interface_spec.md`
+- `docs/hmi_scada_tag_list.md`
+
+A dependency-free screen prototype is available in `scada-prototype/index.html`.
+Grafana datasource, dashboard, and alert provisioning files are under
+`scada/grafana`.
 
 ## Getting Started
 To view and work on this project in your IDE:

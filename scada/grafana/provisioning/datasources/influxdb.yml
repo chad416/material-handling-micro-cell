@@ -1,0 +1,17 @@
+apiVersion: 1
+
+datasources:
+  - name: InfluxDB-Flux
+    uid: influxdb_flux
+    type: influxdb
+    access: proxy
+    url: ${MHMC_INFLUX_URL}
+    isDefault: true
+    editable: true
+    jsonData:
+      version: Flux
+      organization: ${MHMC_INFLUX_ORG}
+      defaultBucket: ${MHMC_INFLUX_BUCKET}
+      tlsSkipVerify: false
+    secureJsonData:
+      token: ${MHMC_INFLUX_TOKEN}

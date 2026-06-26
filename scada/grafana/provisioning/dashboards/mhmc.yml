@@ -1,0 +1,12 @@
+apiVersion: 1
+
+providers:
+  - name: MHMC Dashboards
+    orgId: 1
+    folder: Material Handling Micro Cell
+    type: file
+    disableDeletion: false
+    allowUiUpdates: true
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards

@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MHMC SCADA Prototype</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <strong>MHMC-01</strong>
+      <span id="header-mode">Mode -</span>
+      <span id="header-state">State -</span>
+      <span id="header-permissives">Permissives -</span>
+    </div>
+    <div>
+      <span id="header-historian">Historian -</span>
+      <span id="header-alarm">Alarm -</span>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="Screens">
+    <button class="tab is-active" data-screen="overview">Overview</button>
+    <button class="tab" data-screen="stations">Stations</button>
+    <button class="tab" data-screen="diverters">Diverters</button>
+    <button class="tab" data-screen="jam-recovery">Jam Recovery</button>
+    <button class="tab" data-screen="kpis">KPIs</button>
+    <button class="tab" data-screen="alarms">Alarms</button>
+    <button class="tab" data-screen="maintenance">Maintenance</button>
+    <button class="tab" data-screen="recipes">Recipes</button>
+  </nav>
+
+  <main>
+    <section id="overview" class="screen is-active">
+      <div class="command-row">
+        <button data-command="CMD_StartCell">Start</button>
+        <button data-command="CMD_StopCell">Stop</button>
+        <button data-command="CMD_AlarmAcknowledge">Acknowledge Alarm</button>
+      </div>
+
+      <div class="grid four">
+        <article class="panel">
+          <h2>Cell Status</h2>
+          <dl>
+            <dt>Mode</dt><dd data-tag="HMI_Cell_Mode"></dd>
+            <dt>State</dt><dd data-tag="HMI_Cell_State"></dd>
+            <dt>Heartbeat</dt><dd data-tag="HMI_Cell_Heartbeat"></dd>
+          </dl>
+        </article>
+        <article class="panel">
+          <h2>Conveyor</h2>
+          <dl>
+            <dt>Running</dt><dd data-tag="HMI_Conveyor1_Running"></dd>
+            <dt>Setpoint</dt><dd data-tag="HMI_Conveyor1_SpeedSetpoint"></dd>
+            <dt>Feedback</dt><dd data-tag="HMI_Conveyor1_SpeedFeedback"></dd>
+          </dl>
+        </article>
+        <article class="panel">
+          <h2>Production</h2>
+          <dl>
+            <dt>Total</dt><dd data-tag="KPI_Throughput_Total"></dd>
+            <dt>Lane A</dt><dd data-tag="KPI_Throughput_LaneA"></dd>
+            <dt>Lane B</dt><dd data-tag="KPI_Throughput_LaneB"></dd>
+            <dt>Reject</dt><dd data-tag="KPI_Throughput_Reject"></dd>
+          </dl>
+        </article>
+        <article class="panel">
+          <h2>KPI</h2>
+          <dl>
+            <dt>Throughput/min</dt><dd data-tag="KPI_Throughput_PerMinute"></dd>
+            <dt>Jams</dt><dd data-tag="KPI_TotalJams"></dd>
+            <dt>OEE</dt><dd data-tag="KPI_OEE_Percent"></dd>
+          </dl>
+        </article>
+      </div>
+
+      <article class="panel">
+        <h2>Material Flow</h2>
+        <div class="flow">
+          <span data-indicator="HMI_PE1_Blocked">PE1 Infeed</span>
+          <span data-indicator="HMI_PE2_Blocked">PE2 Scanner</span>
+          <span data-indicator="HMI_PE3_Blocked">PE3 Approach</span>
+          <span data-indicator="HMI_Diverter1_Verify">Lane A Verify</span>
+          <span data-indicator="HMI_Diverter2_Verify">Lane B Verify</span>
+          <span data-indicator="ALM_GeneralJamAlarm">Jam</span>
+        </div>
+      </article>
+    </section>
+
+    <section id="stations" class="screen">
+      <div class="grid two">
+        <article class="panel">
+          <h2>Conveyor Station</h2>
+          <dl>
+            <dt>Running</dt><dd data-tag="HMI_Conveyor1_Running"></dd>
+            <dt>Speed setpoint</dt><dd data-tag="HMI_Conveyor1_SpeedSetpoint"></dd>
+            <dt>Speed feedback</dt><dd data-tag="HMI_Conveyor1_SpeedFeedback"></dd>
+            <dt>Motor current</dt><dd data-tag="HMI_Conveyor1_VFDCurrent"></dd>
+            <dt>Faulted</dt><dd data-tag="HMI_Conveyor1_Faulted"></dd>
+          </dl>
+          <div class="command-row">
+            <button data-command="CMD_ManualJogForward">Jog Forward</button>
+            <button data-command="CMD_ResetCounters">Reset Counters</button>
+          </div>
+        </article>
+
+        <article class="panel">
+          <h2>Scanner Station</h2>
+          <dl>
+            <dt>Last barcode</dt><dd data-tag="HMI_Scanner1_LastBarcode"></dd>
+            <dt>Read success</dt><dd data-tag="HMI_Scanner1_ReadSuccess"></dd>
+            <dt>PE2 blocked</dt><dd data-tag="HMI_PE2_Blocked"></dd>
+          </dl>
+          <div class="command-row">
+            <button data-command="CMD_Scanner1_Trigger">Trigger Scanner</button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="diverters" class="screen">
+      <div class="grid two">
+        <article class="panel">
+          <h2>Diverter 1 Lane A</h2>
+          <dl>
+            <dt>Home</dt><dd data-tag="HMI_Diverter1_Home"></dd>
+            <dt>Work</dt><dd data-tag="HMI_Diverter1_Work"></dd>
+            <dt>Verify PE</dt><dd data-tag="HMI_Diverter1_Verify"></dd>
+            <dt>Faulted</dt><dd data-tag="HMI_Diverter1_Faulted"></dd>
+          </dl>
+          <button data-command="CMD_Diverter1_Extend">Hold Extend</button>
+        </article>
+
+        <article class="panel">
+          <h2>Diverter 2 Lane B</h2>
+          <dl>
+            <dt>Home</dt><dd data-tag="HMI_Diverter2_Home"></dd>
+            <dt>Work</dt><dd data-tag="HMI_Diverter2_Work"></dd>
+            <dt>Verify PE</dt><dd data-tag="HMI_Diverter2_Verify"></dd>
+            <dt>Faulted</dt><dd data-tag="HMI_Diverter2_Faulted"></dd>
+          </dl>
+          <button data-command="CMD_Diverter2_Extend">Hold Extend</button>
+        </article>
+      </div>
+    </section>
+
+    <section id="alarms" class="screen">
+      <article class="panel">
+        <h2>Active Alarm</h2>
+        <dl>
+          <dt>Any active</dt><dd data-tag="ALM_AnyActive"></dd>
+          <dt>Any unacked</dt><dd data-tag="ALM_AnyUnacked"></dd>
+          <dt>Code</dt><dd data-tag="ALM_ActiveCode"></dd>
+          <dt>Severity</dt><dd data-tag="ALM_Severity"></dd>
+          <dt>Message</dt><dd data-tag="ALM_ActiveMessage"></dd>
+        </dl>
+      </article>
+
+      <article class="panel">
+        <h2>Recent Events</h2>
+        <table>
+          <thead>
+            <tr><th>Time</th><th>Tag</th><th>Message</th><th>Severity</th></tr>
+          </thead>
+          <tbody id="alarm-table"></tbody>
+        </table>
+      </article>
+    </section>
+
+    <section id="jam-recovery" class="screen">
+      <article class="panel">
+        <h2>Jam Recovery</h2>
+        <ol class="steps">
+          <li data-step="stop">Stop command confirmed</li>
+          <li data-step="clear">Clear blocked PE sensors</li>
+          <li data-step="home">Verify diverters home</li>
+          <li data-step="reset">Reset jam</li>
+          <li data-step="restart">Restart when permissives are OK</li>
+        </ol>
+        <div class="grid two">
+          <dl>
+            <dt>Jam active</dt><dd data-tag="ALM_GeneralJamAlarm"></dd>
+            <dt>Total jams</dt><dd data-tag="KPI_TotalJams"></dd>
+            <dt>PE1 blocked</dt><dd data-tag="HMI_PE1_Blocked"></dd>
+            <dt>PE2 blocked</dt><dd data-tag="HMI_PE2_Blocked"></dd>
+            <dt>PE3 blocked</dt><dd data-tag="HMI_PE3_Blocked"></dd>
+          </dl>
+          <dl>
+            <dt>Diverter 1 home</dt><dd data-tag="HMI_Diverter1_Home"></dd>
+            <dt>Diverter 2 home</dt><dd data-tag="HMI_Diverter2_Home"></dd>
+            <dt>Last event</dt><dd data-tag="EVT_LastMessage"></dd>
+            <dt>Sequence</dt><dd data-tag="EVT_LastSequence"></dd>
+            <dt>Severity</dt><dd data-tag="EVT_LastSeverity"></dd>
+          </dl>
+        </div>
+        <div class="command-row">
+          <button data-command="CMD_StopCell">Stop Cell</button>
+          <button data-command="CMD_ResetJam">Reset Jam</button>
+          <button data-command="CMD_StartCell">Restart</button>
+        </div>
+      </article>
+    </section>
+
+    <section id="kpis" class="screen">
+      <div class="grid four">
+        <article class="panel">
+          <h2>Throughput</h2>
+          <dl>
+            <dt>Per minute</dt><dd data-tag="KPI_Throughput_PerMinute"></dd>
+            <dt>Total</dt><dd data-tag="KPI_Throughput_Total"></dd>
+          </dl>
+        </article>
+        <article class="panel">
+          <h2>Jams</h2>
+          <dl>
+            <dt>Total jams</dt><dd data-tag="KPI_TotalJams"></dd>
+            <dt>MTBJ</dt><dd data-tag="KPI_MeanTimeBetweenJams_s"></dd>
+          </dl>
+        </article>
+        <article class="panel">
+          <h2>Uptime</h2>
+          <dl>
+            <dt>Availability</dt><dd data-tag="KPI_Availability"></dd>
+            <dt>Window</dt><dd data-tag="KPI_Window_s"></dd>
+          </dl>
+        </article>
+        <article class="panel">
+          <h2>OEE</h2>
+          <dl>
+            <dt>OEE</dt><dd data-tag="KPI_OEE_Percent"></dd>
+            <dt>Cycle time</dt><dd data-tag="KPI_AverageCycleTime_s"></dd>
+          </dl>
+        </article>
+      </div>
+      <article class="panel">
+        <h2>Mock Trend Summary</h2>
+        <div class="trend">
+          <span style="height: 52%"></span>
+          <span style="height: 70%"></span>
+          <span style="height: 64%"></span>
+          <span style="height: 82%"></span>
+          <span style="height: 76%"></span>
+          <span style="height: 88%"></span>
+          <span style="height: 67%"></span>
+          <span style="height: 73%"></span>
+        </div>
+      </article>
+    </section>
+
+    <section id="maintenance" class="screen">
+      <div class="grid two">
+        <article class="panel">
+          <h2>Maintenance Safeguards</h2>
+          <dl>
+            <dt>Mode</dt><dd data-tag="HMI_Cell_Mode"></dd>
+            <dt>Maintenance key</dt><dd data-tag="CMD_MaintenanceKey"></dd>
+            <dt>Permissives</dt><dd data-tag="HMI_Cell_PermissivesOK"></dd>
+            <dt>Historian healthy</dt><dd data-tag="HMI_HistorianHealthy"></dd>
+            <dt>Subscribe enable</dt><dd data-tag="HMI_SubscribeEnable"></dd>
+          </dl>
+          <div class="command-row">
+            <button data-command="CMD_MaintenanceKey">Toggle Maintenance Key</button>
+            <button data-command="CMD_ResetCounters">Reset Counters</button>
+          </div>
+        </article>
+        <article class="panel">
+          <h2>Manual Controls</h2>
+          <dl>
+            <dt>Jog forward</dt><dd data-tag="CMD_ManualJogForward"></dd>
+            <dt>Jog speed</dt><dd data-tag="CMD_ManualJogSpeed"></dd>
+            <dt>Collector heartbeat</dt><dd data-tag="HMI_CollectorHeartbeat"></dd>
+          </dl>
+          <div class="command-row">
+            <button data-command="CMD_ManualJogForward">Jog Forward</button>
+            <button data-command="CMD_CollectorHeartbeat">Pulse Collector Heartbeat</button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="recipes" class="screen">
+      <div class="grid two">
+        <article class="panel">
+          <h2>Active Recipe</h2>
+          <dl>
+            <dt>Recipe ID</dt><dd data-tag="HMI_Recipe_ActiveID"></dd>
+            <dt>Recipe name</dt><dd data-tag="HMI_Recipe_ActiveName"></dd>
+            <dt>Target speed</dt><dd data-tag="CMD_Recipe_TargetSpeed"></dd>
+            <dt>Cell mode</dt><dd data-tag="HMI_Cell_Mode"></dd>
+          </dl>
+        </article>
+        <article class="panel">
+          <h2>Approved Recipes</h2>
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Name</th><th>Speed</th><th>Pattern</th></tr>
+            </thead>
+            <tbody id="recipe-table"></tbody>
+          </table>
+          <div class="command-row">
+            <button data-command="CMD_LoadRecipe">Load Next Recipe</button>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
