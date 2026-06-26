@@ -13,6 +13,11 @@ The MHMC-01 OPC UA Information Model exposes the structural and behavioral prope
 *   **Namespace URI:** `http://antigravity.automation.org/MHMC/`
 *   **Namespace Index (Recommended):** `ns=2` (dynamically assigned at runtime, but mapped as `ns=2` in examples).
 
+**Implementation binding:** the executable namespace and current PLC symbol map
+are implemented in `opcua_server/model.py`.  That file is the authoritative
+bridge from semantic node IDs to the current `Main` ST symbols, including the
+renamed symbolic PE and diverter lane variables.
+
 ```
 Root
  └── Objects
