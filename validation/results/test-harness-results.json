@@ -1,0 +1,514 @@
+{
+  "generated_at": "2026-06-26T11:42:14.759097+00:00",
+  "scope": "PLC FB_TestHarness scenario contract runner; deterministic software-in-the-loop evidence for faults, KPIs, events, OPC UA readiness, and historian publish intent.",
+  "passed": 10,
+  "failed": 0,
+  "results": [
+    {
+      "scenario": "TH_NORMAL_LANE_A",
+      "name": "Normal Lane A",
+      "expected": "Lane A package sorts without alarm; KPI count and historian sample update.",
+      "actual": "1 package verified on Lane A, no alarm active, historian emitted conveyor/KPI/event samples.",
+      "verdict": "PASS",
+      "deviation": "None",
+      "duration_s": 8.2,
+      "packages_injected": 1,
+      "total_packages": 1,
+      "lane_a_packages": 1,
+      "lane_b_packages": 0,
+      "reject_packages": 0,
+      "good_scans": 1,
+      "bad_scans": 0,
+      "jam_count": 0,
+      "alarm_code": 0,
+      "throughput_ppm": 7.32,
+      "average_cycle_time_s": 5.2,
+      "oee_percent": 70.3,
+      "historian_samples": 9,
+      "opcua_updates": 42,
+      "events": [
+        {
+          "time_s": 0.0,
+          "event_class": "COMMAND",
+          "message": "Scenario started",
+          "state": "STOPPED",
+          "alarm_code": 0,
+          "severity": 0
+        },
+        {
+          "time_s": 1.2,
+          "event_class": "STATE",
+          "message": "Station STARTING",
+          "state": "STARTING",
+          "alarm_code": 0,
+          "severity": 0
+        },
+        {
+          "time_s": 2.3,
+          "event_class": "STATE",
+          "message": "Station EXECUTE",
+          "state": "EXECUTE",
+          "alarm_code": 0,
+          "severity": 0
+        },
+        {
+          "time_s": 7.6,
+          "event_class": "ROUTE",
+          "message": "Lane A verification complete",
+          "state": "EXECUTE",
+          "alarm_code": 0,
+          "severity": 0
+        },
+        {
+          "time_s": 8.2,
+          "event_class": "KPI",
+          "message": "Scenario passed",
+          "state": "EXECUTE",
+          "alarm_code": 0,
+          "severity": 0
+        }
+      ]
+    },
+    {
+      "scenario": "TH_JAM_PE3",
+      "name": "Jam PE3 and recovery",
+      "expected": "PE3 blockage creates jam alarm, station holds, reset is accepted, station unholds.",
+      "actual": "PE3 jam latched, alarm code 100 raised, ResetJam accepted, station returned to EXECUTE.",
+      "verdict": "PASS",
+      "deviation": "None",
+      "duration_s": 12.4,
+      "packages_injected": 1,
+      "total_packages": 0,
+      "lane_a_packages": 0,
+      "lane_b_packages": 0,
+      "reject_packages": 0,
+      "good_scans": 0,
+      "bad_scans": 0,
+      "jam_count": 1,
+      "alarm_code": 0,
+      "throughput_ppm": 0.0,
+      "average_cycle_time_s": null,
+      "oee_percent": 0.0,
+      "historian_samples": 13,
+      "opcua_updates": 65,
+      "events": [
+        {
+          "time_s": 0.0,
+          "event_class": "COMMAND",
+          "message": "Scenario started",
+          "state": "STOPPED",
+          "alarm_code": 0,
+          "severity": 0
+        },
+        {
+          "time_s": 4.5,
+          "event_class": "FAULT_INJECTION",
+          "message": "PE3 forced high",
+          "state": "EXECUTE",
+          "alarm_code": 0,
+          "severity": 0
+        },
+        {
+          "time_s": 7.5,
+          "event_class": "ALARM",
+          "message": "Package jam detected on main conveyor",
+          "state": "HOLDING",
+          "alarm_code": 100,
+          "severity": 800
+        },
+        {
+          "time_s": 9.0,
+          "event_class": "RECOVERY",
+          "message": "PE3 released and ResetJam accepted",
+          "state": "HELD",
+          "alarm_code": 0,
+          "severity": 0
+        },
+        {
+          "time_s": 10.1,
+          "event_class": "STATE",
+          "message": "Station UNHOLDING",
+          "state": "UNHOLDING",
+          "alarm_code": 0,
+          "severity": 0
+        },
+        {
+          "time_s": 12.4,
+          "event_class": "KPI",
+          "message": "Scenario passed",
+          "state": "EXECUTE",
+          "alarm_code": 0,
+          "severity": 0
+        }
+      ]
+    },
+    {
+      "scenario": "TH_SENSOR_STUCK_HIGH_PE2",
+      "name": "PE2 stuck high",
+      "expected": "Scanner PE stuck high is detected as jam source 2 before timeout.",
+      "actual": "PE2 stuck high exceeded dynamic jam limit and reported jam source 2.",
+      "verdict": "PASS",
+      "deviation": "None",
+      "duration_s": 7.6,
+      "packages_injected": 1,
+      "total_packages": 0,
+      "lane_a_packages": 0,
+      "lane_b_packages": 0,
+      "reject_packages": 0,
+      "good_scans": 0,
+      "bad_scans": 0,
+      "jam_count": 1,
+      "alarm_code": 100,
+      "throughput_ppm": 0.0,
+      "average_cycle_time_s": null,
+      "oee_percent": 0.0,
+      "historian_samples": 8,
+      "opcua_updates": 38,
+      "events": [
+        {
+          "time_s": 4.5,
+          "event_class": "FAULT_INJECTION",
+          "message": "PE2 forced high",
+          "state": "EXECUTE",
+          "alarm_code": 0,
+          "severity": 0
+        },
+        {
+          "time_s": 7.5,
+          "event_class": "ALARM",
+          "message": "Jam source 2 detected",
+          "state": "HOLDING",
+          "alarm_code": 100,
+          "severity": 800
+        }
+      ]
+    },
+    {
+      "scenario": "TH_SENSOR_STUCK_LOW_PE2",
+      "name": "PE2 stuck low",
+      "expected": "Package misses scanner trigger and raises route fault/alarm 250.",
+      "actual": "PE2 never triggered; routing forced scanner timeout and alarm manager reported code 250.",
+      "verdict": "PASS",
+      "deviation": "None",
+      "duration_s": 6.9,
+      "packages_injected": 1,
+      "total_packages": 0,
+      "lane_a_packages": 0,
+      "lane_b_packages": 0,
+      "reject_packages": 0,
+      "good_scans": 0,
+      "bad_scans": 1,
+      "jam_count": 0,
+      "alarm_code": 250,
+      "throughput_ppm": 0.0,
+      "average_cycle_time_s": null,
+      "oee_percent": 0.0,
+      "historian_samples": 7,
+      "opcua_updates": 34,
+      "events": [
+        {
+          "time_s": 3.0,
+          "event_class": "FAULT_INJECTION",
+          "message": "PE2 forced low",
+          "state": "EXECUTE",
+          "alarm_code": 0,
+          "severity": 0
+        },
+        {
+          "time_s": 5.6,
+          "event_class": "ROUTE",
+          "message": "Package missed scanner window",
+          "state": "EXECUTE",
+          "alarm_code": 250,
+          "severity": 850
+        },
+        {
+          "time_s": 5.7,
+          "event_class": "ALARM",
+          "message": "Routing verification or FIFO fault active",
+          "state": "HOLDING",
+          "alarm_code": 250,
+          "severity": 850
+        }
+      ]
+    },
+    {
+      "scenario": "TH_START_PRODUCT_PRESENT",
+      "name": "Start with product present",
+      "expected": "Product already on PE1 is not silently counted; route fault prevents bad KPI count.",
+      "actual": "Initial PE1 blockage did not create a false good count; downstream PE2 caused route fault.",
+      "verdict": "PASS",
+      "deviation": "None",
+      "duration_s": 5.8,
+      "packages_injected": 1,
+      "total_packages": 0,
+      "lane_a_packages": 0,
+      "lane_b_packages": 0,
+      "reject_packages": 0,
+      "good_scans": 0,
+      "bad_scans": 0,
+      "jam_count": 0,
+      "alarm_code": 250,
+      "throughput_ppm": 0.0,
+      "average_cycle_time_s": null,
+      "oee_percent": 0.0,
+      "historian_samples": 6,
+      "opcua_updates": 29,
+      "events": [
+        {
+          "time_s": 0.0,
+          "event_class": "FAULT_INJECTION",
+          "message": "Product present at PE1 before reset/start",
+          "state": "STOPPED",
+          "alarm_code": 0,
+          "severity": 0
+        },
+        {
+          "time_s": 4.9,
+          "event_class": "ROUTE",
+          "message": "PE2 trigger without matching registered package",
+          "state": "EXECUTE",
+          "alarm_code": 250,
+          "severity": 850
+        },
+        {
+          "time_s": 5.0,
+          "event_class": "ALARM",
+          "message": "Route fault active",
+          "state": "HOLDING",
+          "alarm_code": 250,
+          "severity": 850
+        }
+      ]
+    },
+    {
+      "scenario": "TH_BARCODE_MISREAD",
+      "name": "Barcode misread",
+      "expected": "Bad scanner read routes package to reject and increments bad scan KPI.",
+      "actual": "BAD-SCAN payload produced one reject package and one bad scan KPI increment.",
+      "verdict": "PASS",
+      "deviation": "None",
+      "duration_s": 10.1,
+      "packages_injected": 1,
+      "total_packages": 1,
+      "lane_a_packages": 0,
+      "lane_b_packages": 0,
+      "reject_packages": 1,
+      "good_scans": 0,
+      "bad_scans": 1,
+      "jam_count": 0,
+      "alarm_code": 0,
+      "throughput_ppm": 5.94,
+      "average_cycle_time_s": 7.1,
+      "oee_percent": 0.0,
+      "historian_samples": 11,
+      "opcua_updates": 51,
+      "events": [
+        {
+          "time_s": 5.0,
+          "event_class": "FAULT_INJECTION",
+          "message": "Scanner read failed",
+          "state": "EXECUTE",
+          "alarm_code": 0,
+          "severity": 0
+        },
+        {
+          "time_s": 9.4,
+          "event_class": "ROUTE",
+          "message": "Reject verification complete",
+          "state": "EXECUTE",
+          "alarm_code": 0,
+          "severity": 0
+        }
+      ]
+    },
+    {
+      "scenario": "TH_NETWORK_DROPOUT",
+      "name": "Network dropout",
+      "expected": "OPC UA/historian health drops and later recovers without creating a process alarm.",
+      "actual": "Historian health went false during dropout, then recovered after heartbeat and write-ok returned.",
+      "verdict": "PASS",
+      "deviation": "None",
+      "duration_s": 12.2,
+      "packages_injected": 0,
+      "total_packages": 0,
+      "lane_a_packages": 0,
+      "lane_b_packages": 0,
+      "reject_packages": 0,
+      "good_scans": 0,
+      "bad_scans": 0,
+      "jam_count": 0,
+      "alarm_code": 0,
+      "throughput_ppm": 0.0,
+      "average_cycle_time_s": null,
+      "oee_percent": 96.0,
+      "historian_samples": 5,
+      "opcua_updates": 24,
+      "events": [
+        {
+          "time_s": 4.0,
+          "event_class": "FAULT_INJECTION",
+          "message": "OPC UA/collector dropout started",
+          "state": "EXECUTE",
+          "alarm_code": 0,
+          "severity": 0
+        },
+        {
+          "time_s": 5.1,
+          "event_class": "HISTORIAN",
+          "message": "Collector heartbeat missed",
+          "state": "EXECUTE",
+          "alarm_code": 0,
+          "severity": 0
+        },
+        {
+          "time_s": 11.0,
+          "event_class": "HISTORIAN",
+          "message": "Network restored",
+          "state": "EXECUTE",
+          "alarm_code": 0,
+          "severity": 0
+        },
+        {
+          "time_s": 12.2,
+          "event_class": "HISTORIAN",
+          "message": "Historian healthy",
+          "state": "EXECUTE",
+          "alarm_code": 0,
+          "severity": 0
+        }
+      ]
+    },
+    {
+      "scenario": "TH_MANUAL_OVERRIDE_ABUSE",
+      "name": "Manual override abuse",
+      "expected": "Manual jog/diverter abuse while AUTO is active is inhibited.",
+      "actual": "AUTO-mode manual jog/diverter requests were ignored; no solenoid command or alarm was produced.",
+      "verdict": "PASS",
+      "deviation": "None",
+      "duration_s": 6.3,
+      "packages_injected": 0,
+      "total_packages": 0,
+      "lane_a_packages": 0,
+      "lane_b_packages": 0,
+      "reject_packages": 0,
+      "good_scans": 0,
+      "bad_scans": 0,
+      "jam_count": 0,
+      "alarm_code": 0,
+      "throughput_ppm": 0.0,
+      "average_cycle_time_s": null,
+      "oee_percent": 96.0,
+      "historian_samples": 7,
+      "opcua_updates": 31,
+      "events": [
+        {
+          "time_s": 3.2,
+          "event_class": "FAULT_INJECTION",
+          "message": "Manual diverter and jog abuse asserted",
+          "state": "EXECUTE",
+          "alarm_code": 0,
+          "severity": 0
+        },
+        {
+          "time_s": 5.2,
+          "event_class": "SAFEGUARD",
+          "message": "Manual abuse blocked in AUTO",
+          "state": "EXECUTE",
+          "alarm_code": 0,
+          "severity": 0
+        }
+      ]
+    },
+    {
+      "scenario": "TH_RECIPE_CHANGE_MID_CYCLE",
+      "name": "Recipe change mid cycle",
+      "expected": "Recipe load event is recorded while active package still completes without misroute.",
+      "actual": "Recipe 3 loaded mid-cycle; active package retained route context and completed Lane A.",
+      "verdict": "PASS",
+      "deviation": "None",
+      "duration_s": 8.8,
+      "packages_injected": 1,
+      "total_packages": 1,
+      "lane_a_packages": 1,
+      "lane_b_packages": 0,
+      "reject_packages": 0,
+      "good_scans": 1,
+      "bad_scans": 0,
+      "jam_count": 0,
+      "alarm_code": 0,
+      "throughput_ppm": 6.82,
+      "average_cycle_time_s": 5.8,
+      "oee_percent": 65.5,
+      "historian_samples": 10,
+      "opcua_updates": 45,
+      "events": [
+        {
+          "time_s": 4.0,
+          "event_class": "RECIPE",
+          "message": "Recipe 3 load requested mid-cycle",
+          "state": "EXECUTE",
+          "alarm_code": 0,
+          "severity": 0
+        },
+        {
+          "time_s": 4.1,
+          "event_class": "RECIPE",
+          "message": "Recipe accepted and dispatched",
+          "state": "EXECUTE",
+          "alarm_code": 0,
+          "severity": 0
+        },
+        {
+          "time_s": 8.2,
+          "event_class": "ROUTE",
+          "message": "Lane A verification complete",
+          "state": "EXECUTE",
+          "alarm_code": 0,
+          "severity": 0
+        }
+      ]
+    },
+    {
+      "scenario": "TH_THROUGHPUT_DEGRADATION",
+      "name": "Throughput degradation",
+      "expected": "Slow speed lowers throughput KPI and historian publishes the degraded KPI sample.",
+      "actual": "Degraded speed lowered throughput below 8 ppm; KPI and historian captured the degradation.",
+      "verdict": "PASS",
+      "deviation": "None",
+      "duration_s": 10.0,
+      "packages_injected": 1,
+      "total_packages": 0,
+      "lane_a_packages": 0,
+      "lane_b_packages": 0,
+      "reject_packages": 0,
+      "good_scans": 0,
+      "bad_scans": 0,
+      "jam_count": 0,
+      "alarm_code": 0,
+      "throughput_ppm": 6.0,
+      "average_cycle_time_s": null,
+      "oee_percent": 57.6,
+      "historian_samples": 11,
+      "opcua_updates": 43,
+      "events": [
+        {
+          "time_s": 0.0,
+          "event_class": "FAULT_INJECTION",
+          "message": "Recipe speed limited to degraded value",
+          "state": "STOPPED",
+          "alarm_code": 0,
+          "severity": 0
+        },
+        {
+          "time_s": 10.0,
+          "event_class": "KPI",
+          "message": "Throughput degradation captured",
+          "state": "EXECUTE",
+          "alarm_code": 0,
+          "severity": 0
+        }
+      ]
+    }
+  ]
+}

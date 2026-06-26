@@ -1,11 +1,11 @@
 ﻿# MHMC PLC Validation Report
 
-- Generated: 2026-06-25 16:34:52 +02:00
+- Generated: 2026-06-26 13:42:14 +02:00
 - Workspace: C:\Users\chand\.gemini\antigravity\scratch\material_handling_cell
 - Scope: static source contracts, deterministic offline FAT/reference scenarios, and TwinCAT compiler gate
-- Passed: 145
+- Passed: 168
 - Failed: 0
-- Total checks: 145
+- Total checks: 168
 
 ## Important Scope Boundary
 
@@ -157,6 +157,29 @@ This validation does not replace physical commissioning. Real I/O mapping, E-sto
 | HistorianConnector | missed heartbeat drives unhealthy/backoff condition | PASS |  |
 | FATSequence | startup, Lane A route, jam hold, reset, and unhold complete | PASS |  |
 | FATSequence | FAT KPI reflects verified package | PASS |  |
-| TwinCATCompile | existing TwinCAT build log reports success | PASS |  |
+| TestHarnessContracts | PLC TestHarness source exists | PASS |  |
+| TestHarnessContracts | typed harness input output and config contracts exist | PASS |  |
+| TestHarnessContracts | harness exposes FB and standalone PROGRAM | PASS |  |
+| TestHarnessContracts | harness calls production modules | PASS |  |
+| TestHarnessContracts | harness logs events through timeline helper | PASS |  |
+| TestHarnessContracts | harness has no hard-coded I/O addresses | PASS |  |
+| TestHarnessContracts | scenario defined: TH_NORMAL_LANE_A | PASS |  |
+| TestHarnessContracts | scenario defined: TH_JAM_PE3 | PASS |  |
+| TestHarnessContracts | scenario defined: TH_SENSOR_STUCK_HIGH_PE2 | PASS |  |
+| TestHarnessContracts | scenario defined: TH_SENSOR_STUCK_LOW_PE2 | PASS |  |
+| TestHarnessContracts | scenario defined: TH_START_PRODUCT_PRESENT | PASS |  |
+| TestHarnessContracts | scenario defined: TH_BARCODE_MISREAD | PASS |  |
+| TestHarnessContracts | scenario defined: TH_NETWORK_DROPOUT | PASS |  |
+| TestHarnessContracts | scenario defined: TH_MANUAL_OVERRIDE_ABUSE | PASS |  |
+| TestHarnessContracts | scenario defined: TH_RECIPE_CHANGE_MID_CYCLE | PASS |  |
+| TestHarnessContracts | scenario defined: TH_THROUGHPUT_DEGRADATION | PASS |  |
+| TestHarnessRunner | scenario runner exists | PASS |  |
+| TestHarnessRunner | Python runtime available for deterministic harness runner | PASS |  |
+| TestHarnessRunner | all TestHarness scenarios pass | PASS |  |
+| TestHarnessRunner | TestHarness JSON evidence exists | PASS |  |
+| TestHarnessRunner | TestHarness markdown report exists | PASS |  |
+| TestHarnessRunner | scenario pass count | PASS | expected=[10], actual=[10] |
+| TestHarnessRunner | scenario fail count | PASS | expected=[0], actual=[0] |
+| TwinCATCompile | TwinCAT vendor build evidence reports success | PASS |  |
 | TwinCATCompile | TwinCAT generated TMC symbol file exists | PASS |  |
 | TwinCATCompile | TMC exposes sort recipe and event timeline types | PASS |  |

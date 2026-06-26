@@ -23,6 +23,14 @@ The harness writes evidence to `validation/results/`:
 
 - `validation-summary.json`
 - `validation-report.md`
+- `test-harness-results.json`
+- `test-harness-report.md`
+
+Run the TestHarness scenario matrix directly:
+
+```powershell
+python -B .\validation\run_test_harness.py
+```
 
 Scope boundary: this does not replace physical commissioning. Real I/O mapping,
 E-stop checks, pneumatic timing, VFD behavior, scanner communication, OPC UA

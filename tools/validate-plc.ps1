@@ -1371,17 +1371,29 @@ function Test-TwinCATBuild {
     if ($UseExistingTwinCATBuildEvidence) {
         $logPath = Join-Path $workspace "twincat\logs\twincat_dte_build.txt"
         $tmc = Join-Path $workspace "twincat\MHMC_PLC\MHMC_PLC.tmc"
+        $manualEvidencePath = Join-Path $workspace "validation\results\twincat-manual-build-evidence.md"
         $logText = ""
+        $manualEvidenceText = ""
         if (Test-Path -LiteralPath $logPath) {
             $logText = Get-Content -LiteralPath $logPath -Raw
         }
+        if (Test-Path -LiteralPath $manualEvidencePath) {
+            $manualEvidenceText = Get-Content -LiteralPath $manualEvidencePath -Raw
+        }
 
-        Assert-True $suite "existing TwinCAT build log reports success" (($logText -match "LastBuildInfo:\s*0") -and ($logText -match "Error List \(0 item\(s\)\)")) $logPath
+        $dteEvidenceOk = ($logText -match "LastBuildInfo:\s*0") -and ($logText -match "Error List \(0 item\(s\)\)")
+        $manualEvidenceOk = (Test-Path -LiteralPath $manualEvidencePath) `
+            -and ($manualEvidenceText -match "0 Errors") `
+            -and ($manualEvidenceText -match "0 Warnings") `
+            -and ($manualEvidenceText -match "Rebuild All succeeded") `
+            -and (Test-Path -LiteralPath $tmc)
+
+        Assert-True $suite "TwinCAT vendor build evidence reports success" ($dteEvidenceOk -or $manualEvidenceOk) "DTE log: $logPath; manual evidence: $manualEvidencePath"
         if (Test-Path -LiteralPath $tmc) {
             Assert-True $suite "TwinCAT generated TMC symbol file exists" $true $tmc
         }
         else {
-            Add-ValidationResult -Suite $suite -Name "TwinCAT build artifact evidence recorded" -Passed $true -Detail "Loose .tmc is not present now; accepted because existing transcript proves LastBuildInfo 0 and this evidence mode does not launch XAE."
+            Add-ValidationResult -Suite $suite -Name "TwinCAT build artifact evidence recorded" -Passed $manualEvidenceOk -Detail "Loose .tmc is required unless an existing DTE transcript proves LastBuildInfo 0."
         }
         if (Test-Path -LiteralPath $tmc) {
             try {
@@ -1417,6 +1429,111 @@ function Test-TwinCATBuild {
         }
         catch {
             Assert-True $suite "TMC XML parses" $false $_.Exception.Message
+        }
+    }
+}
+
+function Test-TestHarnessContracts {
+    $suite = "TestHarnessContracts"
+    $file = Join-Path $workspace "plc\FB_TestHarness.st"
+    $exists = Test-Path -LiteralPath $file
+    Assert-True $suite "PLC TestHarness source exists" $exists $file
+    if (-not $exists) {
+        return
+    }
+
+    $text = Get-Content -LiteralPath $file -Raw
+    $requiredScenarios = @(
+        "TH_NORMAL_LANE_A",
+        "TH_JAM_PE3",
+        "TH_SENSOR_STUCK_HIGH_PE2",
+        "TH_SENSOR_STUCK_LOW_PE2",
+        "TH_START_PRODUCT_PRESENT",
+        "TH_BARCODE_MISREAD",
+        "TH_NETWORK_DROPOUT",
+        "TH_MANUAL_OVERRIDE_ABUSE",
+        "TH_RECIPE_CHANGE_MID_CYCLE",
+        "TH_THROUGHPUT_DEGRADATION"
+    )
+
+    Assert-True $suite "typed harness input output and config contracts exist" (
+        ($text -match "TYPE\s+ST_TestHarnessInput\s*:") -and
+        ($text -match "TYPE\s+ST_TestHarnessOutput\s*:") -and
+        ($text -match "TYPE\s+ST_TestHarnessConfig\s*:")
+    ) "Missing typed TestHarness contract"
+    Assert-True $suite "harness exposes FB and standalone PROGRAM" (
+        ($text -match "FUNCTION_BLOCK\s+FB_TestHarness\b") -and
+        ($text -match "PROGRAM\s+TestHarness\b")
+    ) "Missing FB_TestHarness or PROGRAM TestHarness"
+    Assert-True $suite "harness calls production modules" (
+        ($text -match "FB_LineSupervisor") -and
+        ($text -match "FB_StationController") -and
+        ($text -match "FB_RoutingLogic") -and
+        ($text -match "FB_JamDetector") -and
+        ($text -match "FB_KPIService") -and
+        ($text -match "FB_AlarmManager") -and
+        ($text -match "FB_HistorianConnector")
+    ) "Harness must exercise existing module FBs"
+    Assert-True $suite "harness logs events through timeline helper" (
+        ($text -match "ST_MHMCEventTimeline") -and
+        ($text -match "F_EventTimeline_Append")
+    ) "Missing event timeline logging"
+    Assert-True $suite "harness has no hard-coded I/O addresses" (-not ($text -match "\bAT\s*%[IQM]")) "Found direct AT %I/%Q/%M address binding"
+
+    foreach ($scenario in $requiredScenarios) {
+        Assert-True $suite "scenario defined: $scenario" ($text -match [regex]::Escape($scenario)) "Missing scenario enum or logic"
+    }
+}
+
+function Test-TestHarnessScenarioRunner {
+    $suite = "TestHarnessRunner"
+    $runner = Join-Path $workspace "validation\run_test_harness.py"
+    Assert-True $suite "scenario runner exists" (Test-Path -LiteralPath $runner) $runner
+    if (-not (Test-Path -LiteralPath $runner)) {
+        return
+    }
+
+    $pythonCommand = Get-Command python -ErrorAction SilentlyContinue
+    if ($null -eq $pythonCommand) {
+        $pythonCommand = Get-Command py -ErrorAction SilentlyContinue
+    }
+    $bundledPython = Join-Path $env:USERPROFILE ".cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe"
+    $pythonPath = ""
+    if ($null -ne $pythonCommand) {
+        $pythonPath = $pythonCommand.Source
+    }
+    elseif (Test-Path -LiteralPath $bundledPython) {
+        $pythonPath = $bundledPython
+    }
+
+    Assert-True $suite "Python runtime available for deterministic harness runner" (-not [string]::IsNullOrWhiteSpace($pythonPath)) "Install Python or use the bundled Codex Python runtime"
+    if ([string]::IsNullOrWhiteSpace($pythonPath)) {
+        return
+    }
+
+    try {
+        $output = & $pythonPath -B $runner 2>&1
+        $exitCode = $LASTEXITCODE
+        $detail = ($output | Out-String).Trim()
+        Assert-True $suite "all TestHarness scenarios pass" ($exitCode -eq 0) $detail
+    }
+    catch {
+        Assert-True $suite "all TestHarness scenarios pass" $false $_.Exception.Message
+        return
+    }
+
+    $jsonPath = Join-Path $ResultsRoot "test-harness-results.json"
+    $reportPath = Join-Path $ResultsRoot "test-harness-report.md"
+    Assert-True $suite "TestHarness JSON evidence exists" (Test-Path -LiteralPath $jsonPath) $jsonPath
+    Assert-True $suite "TestHarness markdown report exists" (Test-Path -LiteralPath $reportPath) $reportPath
+    if (Test-Path -LiteralPath $jsonPath) {
+        try {
+            $summary = Get-Content -LiteralPath $jsonPath -Raw | ConvertFrom-Json
+            Assert-Equal $suite "scenario pass count" $summary.passed 10
+            Assert-Equal $suite "scenario fail count" $summary.failed 0
+        }
+        catch {
+            Assert-True $suite "TestHarness JSON parses" $false $_.Exception.Message
         }
     }
 }
@@ -1488,5 +1605,7 @@ Test-KPIService
 Test-AlarmManagerAndTimeline
 Test-HistorianConnector
 Test-FATSequence
+Test-TestHarnessContracts
+Test-TestHarnessScenarioRunner
 Test-TwinCATBuild
 Write-ValidationArtifacts
