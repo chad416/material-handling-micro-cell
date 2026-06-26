@@ -33,16 +33,16 @@ VAR
     xMaintenanceKey         : BOOL := FALSE; // Maintenance key switch / role grant.
     eSelectedMode           : E_PackML_Mode := E_PackML_Mode.AUTO;
 
-    xSensorPE1              : BOOL := FALSE; // Infeed package PE.
-    xSensorPE2              : BOOL := FALSE; // Scanner trigger PE.
-    xSensorPE3              : BOOL := FALSE; // Diverter approach PE.
-    xSensorPE4              : BOOL := FALSE; // Lane A verification PE.
-    xSensorPE5              : BOOL := FALSE; // Lane B verification PE.
-    xSensorPE6              : BOOL := FALSE; // Reject verification PE.
-    xDiverter1HomeSensor    : BOOL := TRUE;  // Diverter 1 home switch.
-    xDiverter1WorkSensor    : BOOL := FALSE; // Diverter 1 work switch.
-    xDiverter2HomeSensor    : BOOL := TRUE;  // Diverter 2 home switch.
-    xDiverter2WorkSensor    : BOOL := FALSE; // Diverter 2 work switch.
+    xPE1_Infeed             : BOOL := FALSE; // Infeed package PE.
+    xPE2_ScannerTrigger     : BOOL := FALSE; // Scanner trigger PE.
+    xPE3_DiverterApproach   : BOOL := FALSE; // Diverter approach PE.
+    xPE4_LaneAVerify        : BOOL := FALSE; // Lane A verification PE.
+    xPE5_LaneBVerify        : BOOL := FALSE; // Lane B verification PE.
+    xPE6_RejectVerify       : BOOL := FALSE; // Reject verification PE.
+    xDivLaneA_HomeSensor    : BOOL := TRUE;  // Diverter Lane A home switch.
+    xDivLaneA_WorkSensor    : BOOL := FALSE; // Diverter Lane A work switch.
+    xDivLaneB_HomeSensor    : BOOL := TRUE;  // Diverter Lane B home switch.
+    xDivLaneB_WorkSensor    : BOOL := FALSE; // Diverter Lane B work switch.
 
     sScannerData            : STRING(80) := '';    // Scanner payload.
     xScannerDataValid       : BOOL := FALSE;       // Scanner good-read flag.
@@ -132,12 +132,12 @@ END_VAR
 // =========================================================
 // 1. SENSOR DEBOUNCE
 // =========================================================
-tonPE1Debounce(IN := xSensorPE1, PT := tSensorDebounce);
-tonPE2Debounce(IN := xSensorPE2, PT := tSensorDebounce);
-tonPE3Debounce(IN := xSensorPE3, PT := tSensorDebounce);
-tonPE4Debounce(IN := xSensorPE4, PT := tSensorDebounce);
-tonPE5Debounce(IN := xSensorPE5, PT := tSensorDebounce);
-tonPE6Debounce(IN := xSensorPE6, PT := tSensorDebounce);
+tonPE1Debounce(IN := xPE1_Infeed, PT := tSensorDebounce);
+tonPE2Debounce(IN := xPE2_ScannerTrigger, PT := tSensorDebounce);
+tonPE3Debounce(IN := xPE3_DiverterApproach, PT := tSensorDebounce);
+tonPE4Debounce(IN := xPE4_LaneAVerify, PT := tSensorDebounce);
+tonPE5Debounce(IN := xPE5_LaneBVerify, PT := tSensorDebounce);
+tonPE6Debounce(IN := xPE6_RejectVerify, PT := tSensorDebounce);
 xPE1Debounced := tonPE1Debounce.Q;
 xPE2Debounced := tonPE2Debounce.Q;
 xPE3Debounced := tonPE3Debounce.Q;
@@ -324,8 +324,8 @@ fbRouting(
     stManual := stManual,
     xAutoEnable := fbStationController.stOut.xRunRouting,
     xMaintenanceSafeguardsOK := fbStationController.stOut.xMaintenanceSafe,
-    xDiverter1Ready := xDiverter1HomeSensor AND NOT fbDiverter1.stOut.xBusy AND NOT fbDiverter1.stOut.xFaulted,
-    xDiverter2Ready := xDiverter2HomeSensor AND NOT fbDiverter2.stOut.xBusy AND NOT fbDiverter2.stOut.xFaulted,
+    xDiverter1Ready := xDivLaneA_HomeSensor AND NOT fbDiverter1.stOut.xBusy AND NOT fbDiverter1.stOut.xFaulted,
+    xDiverter2Ready := xDivLaneB_HomeSensor AND NOT fbDiverter2.stOut.xBusy AND NOT fbDiverter2.stOut.xFaulted,
     xDiverter1Done := fbDiverter1.stOut.xDone,
     xDiverter2Done := fbDiverter2.stOut.xDone,
     xDiverter1Faulted := fbDiverter1.stOut.xFaulted,
@@ -342,8 +342,8 @@ stDiverter1In.xInterlockOK := fbStationController.stOut.xPermissivesOK;
 stDiverter1In.xInhibit := fbJamDetector.stOut.xJamAlarm OR fbRouting.xRouteFault;
 stDiverter1In.xForceRetract := fbStationController.stOut.xConveyorQuickStop
                                OR NOT fbStationController.stOut.xPermissivesOK;
-stDiverter1In.xHomeSensor := xDiverter1HomeSensor;
-stDiverter1In.xWorkSensor := xDiverter1WorkSensor;
+stDiverter1In.xHomeSensor := xDivLaneA_HomeSensor;
+stDiverter1In.xWorkSensor := xDivLaneA_WorkSensor;
 stDiverter1In.xVerificationSensor := xPE4Debounced;
 stDiverter1In.xResetFault := fbStationController.stOut.xResetAlarms;
 stDiverter1In.rCycleTime_s := rCycleTime_s;
@@ -352,8 +352,8 @@ fbDiverter1(stIn := stDiverter1In, stConfig := stDiverter1Config);
 stDiverter2In := stDiverter1In;
 stDiverter2In.xExtendRequest := fbRouting.stDiverter2.xCommandExtend;
 stDiverter2In.xManualExtend := fbStationController.stOut.xManualDivert2;
-stDiverter2In.xHomeSensor := xDiverter2HomeSensor;
-stDiverter2In.xWorkSensor := xDiverter2WorkSensor;
+stDiverter2In.xHomeSensor := xDivLaneB_HomeSensor;
+stDiverter2In.xWorkSensor := xDivLaneB_WorkSensor;
 stDiverter2In.xVerificationSensor := xPE5Debounced;
 fbDiverter2(stIn := stDiverter2In, stConfig := stDiverter2Config);
 
