@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MHMC Visual Digital Twin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">MHMC-01 software-in-the-loop</p>
+        <h1>Visual Digital Twin</h1>
+      </div>
+      <div class="status-strip" aria-label="Cell status">
+        <span id="modePill" class="pill ok">AUTO</span>
+        <span id="statePill" class="pill">IDLE</span>
+        <span id="alarmPill" class="pill ok">No alarm</span>
+      </div>
+    </header>
+
+    <section class="toolbar" aria-label="Demo controls">
+      <button id="startBtn" type="button">Start</button>
+      <button id="stopBtn" type="button">Stop</button>
+      <button id="resetBtn" type="button">Reset Jam</button>
+      <label>
+        Scenario
+        <select id="scenarioSelect">
+          <option value="normal">Normal sort mix</option>
+          <option value="jam_pe3">Jam at PE3</option>
+          <option value="bad_scan">Barcode misread</option>
+          <option value="slow_throughput">Throughput degradation</option>
+        </select>
+      </label>
+      <label>
+        Recipe
+        <select id="recipeSelect">
+          <option value="1">Recipe 1: Lane A priority</option>
+          <option value="2">Recipe 2: Lane B priority</option>
+          <option value="3">Recipe 3: Reject audit</option>
+        </select>
+      </label>
+    </section>
+
+    <section class="metrics" aria-label="KPI summary">
+      <article><span>Total</span><strong id="totalCount">0</strong></article>
+      <article><span>Lane A</span><strong id="laneACount">0</strong></article>
+      <article><span>Lane B</span><strong id="laneBCount">0</strong></article>
+      <article><span>Reject</span><strong id="rejectCount">0</strong></article>
+      <article><span>Jams</span><strong id="jamCount">0</strong></article>
+      <article><span>Throughput</span><strong id="throughput">0.0 ppm</strong></article>
+    </section>
+
+    <section class="cell-layout" aria-label="Animated cell layout">
+      <div class="legend">
+        <span><i class="sensor"></i> PE sensor</span>
+        <span><i class="package"></i> Package</span>
+        <span><i class="diverter"></i> Diverter</span>
+      </div>
+      <div class="cell-stage">
+        <div class="lane lane-a"><span>Lane A</span></div>
+        <div class="lane lane-b"><span>Lane B</span></div>
+        <div class="main-conveyor">
+          <span class="belt-label">Infeed conveyor</span>
+          <div id="packagesLayer" class="packages-layer"></div>
+          <div id="div1" class="diverter-arm div1"></div>
+          <div id="div2" class="diverter-arm div2"></div>
+          <div id="pe1" class="pe" style="left: 8%;">PE1</div>
+          <div id="pe2" class="pe" style="left: 28%;">PE2</div>
+          <div id="pe3" class="pe" style="left: 52%;">PE3</div>
+          <div id="pe6" class="pe" style="left: 92%;">PE6</div>
+          <div class="scanner">Scanner</div>
+        </div>
+        <div class="reject-lane"><span>Reject</span></div>
+      </div>
+    </section>
+
+    <section class="lower-grid">
+      <article class="panel">
+        <h2>Semantic Signals</h2>
+        <dl id="signalList"></dl>
+      </article>
+      <article class="panel">
+        <h2>Event Timeline</h2>
+        <ol id="eventList"></ol>
+      </article>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

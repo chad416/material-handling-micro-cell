@@ -19,10 +19,12 @@ FAT/SAT evidence.
 | `plc/` | IEC 61131-3 Structured Text modules for line supervision, PackML station control, routing, diverters, jam detection, alarm management, KPI calculation, historian handshake, and TestHarness. |
 | `twincat/` | Generated TwinCAT 3 solution and PLC project wrapper built from `plc/*.st`. |
 | `digital_twin/` | Python simulation assets for the material handling cell. |
+| `digital_twin/visual_demo/` | Dependency-free browser visual twin for portfolio walkthroughs. |
 | `opcua_server/` | Semantic OPC UA server exposing machine states, counters, alarms, maintenance variables, recipes, and KPI nodes. |
 | `historian_service/` | Buffered historian connector, InfluxDB line protocol writer, KPI calculations, and query API. |
 | `scada/` | InfluxDB, Telegraf, and Grafana configuration/provisioning. |
 | `scada-prototype/` | Dependency-free HTML/JS HMI prototype with mock tag bindings. |
+| `portfolio_evidence/` | Repeatable software evidence-pack workflow for interview/demo material. |
 | `docs/` | Functional design, HMI/SCADA design, tag list, network topology, final report, and documentation templates. |
 | `validation/` | PLC validation runner, TestHarness scenario runner, and generated evidence reports. |
 | `tools/` | TwinCAT project generation, build, validation, and Grafana import helpers. |
@@ -106,6 +108,50 @@ Evidence files:
 - `validation/results/validation-report.md`
 - `validation/results/twincat-manual-build-evidence.md`
 - `validation/results/opcua-historian-test-report.md`
+- `validation/results/software-polish-report.md`
+
+## Software Demo Stack
+
+The software-side portfolio demo can be started with one command. It runs the
+semantic OPC UA server, historian connector, query API, HMI prototype, and
+visual digital twin. OPC UA starts with Basic256Sha256 SignAndEncrypt by
+default; use `-InsecureOpcUa` only for local troubleshooting.
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\start-software-demo.ps1 -UseLocalDevDefaults -OpenBrowser
+```
+
+Stop the demo stack:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\stop-software-demo.ps1
+```
+
+Demo assets:
+
+| Asset | URL |
+| --- | --- |
+| HMI prototype | `http://127.0.0.1:8092/` |
+| Visual digital twin | `http://127.0.0.1:8093/` |
+| Historian preview | `http://127.0.0.1:8091/preview` |
+| Grafana dashboard | `http://localhost:3000/d/mhmc-kpi-events/mhmc-01-kpi-and-event-dashboard` |
+
+Run the software-polish validation gate:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\run-software-polish-validation.ps1
+```
+
+### Portfolio Evidence Pack
+
+Create a Portfolio evidence pack:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\new-portfolio-evidence-pack.ps1 -IncludeRuntimeLogs
+```
+
+The demo narrative and screenshot checklist are documented in
+`docs/portfolio_demo_narrative.md`.
 
 ## OPC UA, Historian, and Grafana
 

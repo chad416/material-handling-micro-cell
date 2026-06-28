@@ -1,1 +1,7 @@
 twincat/
+runtime/
+portfolio_evidence/generated/
+opcua_server/certs/*.der
+opcua_server/certs/*.pem
+__pycache__/
+*.pyc

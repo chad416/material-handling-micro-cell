@@ -1,0 +1,116 @@
+{
+  "generated": "2026-06-28T19:08:32+02:00",
+  "passed": 18,
+  "failed": 0,
+  "total": 18,
+  "results": [
+    {
+      "suite": "VisualTwin",
+      "check": "visual demo README exists",
+      "passed": true,
+      "detail": "C:\\Users\\chand\\.gemini\\antigravity\\scratch\\material_handling_cell\\digital_twin\\visual_demo\\README.md"
+    },
+    {
+      "suite": "VisualTwin",
+      "check": "visual demo HTML exists",
+      "passed": true,
+      "detail": "C:\\Users\\chand\\.gemini\\antigravity\\scratch\\material_handling_cell\\digital_twin\\visual_demo\\index.html"
+    },
+    {
+      "suite": "VisualTwin",
+      "check": "visual demo CSS exists",
+      "passed": true,
+      "detail": "C:\\Users\\chand\\.gemini\\antigravity\\scratch\\material_handling_cell\\digital_twin\\visual_demo\\style.css"
+    },
+    {
+      "suite": "VisualTwin",
+      "check": "visual demo JS exists",
+      "passed": true,
+      "detail": "C:\\Users\\chand\\.gemini\\antigravity\\scratch\\material_handling_cell\\digital_twin\\visual_demo\\app.js"
+    },
+    {
+      "suite": "VisualTwin",
+      "check": "visual demo exposes expected scenarios",
+      "passed": true,
+      "detail": "all expected text present"
+    },
+    {
+      "suite": "VisualTwin",
+      "check": "visual demo renders event timeline panel",
+      "passed": true,
+      "detail": "all expected text present"
+    },
+    {
+      "suite": "DemoRuntime",
+      "check": "start script exists",
+      "passed": true,
+      "detail": "C:\\Users\\chand\\.gemini\\antigravity\\scratch\\material_handling_cell\\tools\\start-software-demo.ps1"
+    },
+    {
+      "suite": "DemoRuntime",
+      "check": "stop script exists",
+      "passed": true,
+      "detail": "C:\\Users\\chand\\.gemini\\antigravity\\scratch\\material_handling_cell\\tools\\stop-software-demo.ps1"
+    },
+    {
+      "suite": "DemoRuntime",
+      "check": "start script uses strict PowerShell pattern",
+      "passed": true,
+      "detail": "all expected text present"
+    },
+    {
+      "suite": "DemoRuntime",
+      "check": "stop script uses strict PowerShell pattern",
+      "passed": true,
+      "detail": "all expected text present"
+    },
+    {
+      "suite": "DemoRuntime",
+      "check": "start script defaults to secure OPC UA",
+      "passed": true,
+      "detail": "all expected text present"
+    },
+    {
+      "suite": "EvidencePack",
+      "check": "evidence generator exists",
+      "passed": true,
+      "detail": "C:\\Users\\chand\\.gemini\\antigravity\\scratch\\material_handling_cell\\tools\\new-portfolio-evidence-pack.ps1"
+    },
+    {
+      "suite": "EvidencePack",
+      "check": "evidence README exists",
+      "passed": true,
+      "detail": "C:\\Users\\chand\\.gemini\\antigravity\\scratch\\material_handling_cell\\portfolio_evidence\\README.md"
+    },
+    {
+      "suite": "EvidencePack",
+      "check": "evidence generator defines screenshot capture slots",
+      "passed": true,
+      "detail": "all expected text present"
+    },
+    {
+      "suite": "Docs",
+      "check": "portfolio demo narrative exists",
+      "passed": true,
+      "detail": "C:\\Users\\chand\\.gemini\\antigravity\\scratch\\material_handling_cell\\docs\\portfolio_demo_narrative.md"
+    },
+    {
+      "suite": "Docs",
+      "check": "demo narrative has both walkthrough scripts",
+      "passed": true,
+      "detail": "all expected text present"
+    },
+    {
+      "suite": "Docs",
+      "check": "README documents software demo workflow",
+      "passed": true,
+      "detail": "all expected text present"
+    },
+    {
+      "suite": "SecureOpcUa",
+      "check": "secure client reads semantic node",
+      "passed": true,
+      "detail": "secure Basic256Sha256 SignAndEncrypt client read succeeded"
+    }
+  ]
+}

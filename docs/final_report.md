@@ -25,6 +25,9 @@ on the manual XAE rebuild evidence. The deterministic validation suite reports
 | HMI/SCADA design | Screen spec, tag list, prototype | Complete |
 | Grafana | Datasource, dashboard, alert provisioning | Complete |
 | Documentation templates | FAT, SAT, I/O, alarms, interlocks, logs, as-built templates | Complete |
+| Visual digital twin | Browser-based animated demo under `digital_twin/visual_demo/` | Complete |
+| Demo runtime tooling | One-command start/stop scripts under `tools/` | Complete |
+| Portfolio evidence pack | Evidence generator and screenshot capture checklist | Complete |
 
 ## 3. PLC Module Summary
 
@@ -68,6 +71,7 @@ timeline panels, and throughput alert rules.
 | TwinCAT manual build | 0 errors, 0 warnings | `validation/results/twincat-manual-build-evidence.md` |
 | OPC UA/historian deterministic checks | PASS | `validation/results/opcua-historian-test-report.md` |
 | Grafana dashboard import | Verified locally | `scada/grafana/` and import helper |
+| Software polish validation | PASS | `validation/results/software-polish-report.md` |
 
 ## 6. TestHarness Scenario Summary
 
@@ -100,6 +104,7 @@ No scenario deviations were recorded in the deterministic software validation.
 | Simulation Strategy Recommendation | `docs/simulation_strategy_recommendation.md` |
 | Documentation Templates | `docs/documentation_templates/` |
 | Final Report | `docs/final_report.md` |
+| Portfolio Demo Narrative | `docs/portfolio_demo_narrative.md` |
 
 ## 8. Remaining Hardware Integration Tasks
 
@@ -128,8 +133,13 @@ No scenario deviations were recorded in the deterministic software validation.
 
 ## 10. Engineering Conclusion
 
-The software baseline is ready for controlled hardware integration. The code is
-modular, symbolically mapped, TwinCAT-compiled, and covered by deterministic
-validation including fault injection and KPI/event evidence. The remaining work
-is physical commissioning, formal FAT/SAT execution, production network/security
-configuration, and as-built closeout.
+The software baseline is ready for controlled hardware integration and
+portfolio presentation. The code is modular, symbolically mapped,
+TwinCAT-compiled, and covered by deterministic validation including fault
+injection, KPI/event evidence, OPC UA/historian checks, secure OPC UA polish
+validation, visual digital twin assets, and repeatable demo tooling.
+
+The remaining work is hardware-only: physical I/O mapping, point-to-point
+checkout, safety validation, VFD/pneumatic/scanner commissioning, real package
+matrix testing, signed FAT/SAT execution, production credential/certificate
+hardening, and as-built closeout.

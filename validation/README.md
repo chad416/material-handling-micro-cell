@@ -32,6 +32,17 @@ Run the TestHarness scenario matrix directly:
 python -B .\validation\run_test_harness.py
 ```
 
+Run the software-polish validation gate:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\run-software-polish-validation.ps1
+```
+
+This writes:
+
+- `validation/results/software-polish-summary.json`
+- `validation/results/software-polish-report.md`
+
 Scope boundary: this does not replace physical commissioning. Real I/O mapping,
 E-stop checks, pneumatic timing, VFD behavior, scanner communication, OPC UA
 collector connectivity, and signed FAT/SAT still require the actual cell.

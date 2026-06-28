@@ -1,6 +1,6 @@
 ﻿# MHMC PLC Validation Report
 
-- Generated: 2026-06-26 13:42:14 +02:00
+- Generated: 2026-06-28 19:14:54 +02:00
 - Workspace: C:\Users\chand\.gemini\antigravity\scratch\material_handling_cell
 - Scope: static source contracts, deterministic offline FAT/reference scenarios, and TwinCAT compiler gate
 - Passed: 168

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-26T11:42:14.759097+00:00",
+  "generated_at": "2026-06-28T17:14:54.439058+00:00",
   "scope": "PLC FB_TestHarness scenario contract runner; deterministic software-in-the-loop evidence for faults, KPIs, events, OPC UA readiness, and historian publish intent.",
   "passed": 10,
   "failed": 0,
